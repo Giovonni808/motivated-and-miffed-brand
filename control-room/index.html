@@ -1,0 +1,764 @@
+<title>Motivated &amp; Miffed Control Room</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --ink:#0E0D14; --surface:#171622; --surface-2:#1F1E2C; --line:#2A2839; --line-soft:#211F2E;
+    --text:#EDEBF5; --muted:#9A97AE; --dim:#6E6B82;
+    --accent:#7C5CFF; --accent-ink:#C7B8FF; --accent-soft:rgba(124,92,255,.15); --track:#2E2C42;
+    --good:#3FBF8F; --good-soft:rgba(63,191,143,.13);
+    --warn:#E8A13A; --warn-soft:rgba(232,161,58,.13);
+    --crit:#E5556B; --crit-soft:rgba(229,85,107,.13);
+    --panel-shadow:0 1px 0 rgba(255,255,255,.035) inset, 0 10px 30px -18px rgba(0,0,0,.75);
+    --display:"Fraunces",Georgia,"Times New Roman",serif;
+    --body:"Archivo","Helvetica Neue",Helvetica,Arial,sans-serif;
+    --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+  @media (prefers-color-scheme: light){
+    :root:not([data-theme="dark"]){
+      --ink:#F6F5FB; --surface:#FFFFFF; --surface-2:#F1EFF8; --line:#E1DEEF; --line-soft:#EDEAF6;
+      --text:#191727; --muted:#5D5975; --dim:#8B87A0;
+      --accent:#5B34E8; --accent-ink:#4A26CE; --accent-soft:rgba(91,52,232,.10); --track:#E3E0F0;
+      --good:#127956; --good-soft:rgba(18,121,86,.10);
+      --warn:#8F5A0C; --warn-soft:rgba(143,90,12,.11);
+      --crit:#BE2F46; --crit-soft:rgba(190,47,70,.10);
+      --panel-shadow:0 1px 2px rgba(24,22,44,.05), 0 12px 28px -22px rgba(24,22,44,.35);
+    }
+  }
+  :root[data-theme="light"]{
+    --ink:#F6F5FB; --surface:#FFFFFF; --surface-2:#F1EFF8; --line:#E1DEEF; --line-soft:#EDEAF6;
+    --text:#191727; --muted:#5D5975; --dim:#8B87A0;
+    --accent:#5B34E8; --accent-ink:#4A26CE; --accent-soft:rgba(91,52,232,.10); --track:#E3E0F0;
+    --good:#127956; --good-soft:rgba(18,121,86,.10);
+    --warn:#8F5A0C; --warn-soft:rgba(143,90,12,.11);
+    --crit:#BE2F46; --crit-soft:rgba(190,47,70,.10);
+    --panel-shadow:0 1px 2px rgba(24,22,44,.05), 0 12px 28px -22px rgba(24,22,44,.35);
+  }
+
+  *{box-sizing:border-box}
+  body{
+    background:var(--ink); color:var(--text);
+    font-family:var(--body); font-size:15px; line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1180px; margin:0 auto; padding:28px 22px 64px; display:flex; flex-direction:column; gap:26px}
+
+  /* ---------- masthead ---------- */
+  .masthead{display:flex; align-items:flex-start; justify-content:space-between; gap:20px; flex-wrap:wrap}
+  .ident{display:flex; align-items:center; gap:13px}
+  .monogram{
+    width:42px; height:42px; flex:none; border-radius:11px;
+    background:linear-gradient(160deg,var(--accent),#4a2fb8);
+    color:#fff; font-family:var(--display); font-weight:700; font-size:15px;
+    display:grid; place-items:center; letter-spacing:-.02em;
+    box-shadow:0 6px 18px -10px var(--accent);
+  }
+  .ident h1{
+    margin:0; font-family:var(--display); font-weight:600; font-size:25px;
+    letter-spacing:-.015em; line-height:1.15; text-wrap:balance;
+  }
+  .ident .sub{margin:2px 0 0; color:var(--muted); font-size:12.5px}
+  .ident .sub b{color:var(--text); font-weight:600}
+  .status{display:flex; align-items:center; gap:10px; flex-wrap:wrap}
+  .stamp{
+    font-family:var(--mono); font-size:10.5px; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--dim); text-align:right; line-height:1.5;
+  }
+  .btn{
+    font-family:var(--body); font-size:12.5px; font-weight:600; color:var(--text);
+    background:var(--surface); border:1px solid var(--line); border-radius:9px;
+    padding:8px 13px; cursor:pointer; display:inline-flex; align-items:center; gap:7px;
+    transition:border-color .15s, background .15s;
+  }
+  .btn:hover{border-color:var(--accent); background:var(--surface-2)}
+  .btn:active{transform:translateY(1px)}
+  .btn[disabled]{opacity:.5; cursor:default; transform:none}
+  .btn:focus-visible, a:focus-visible{outline:2px solid var(--accent); outline-offset:2px; border-radius:6px}
+
+  /* ---------- lead signal ---------- */
+  .signal{
+    display:grid; grid-template-columns:4px 1fr; gap:0;
+    background:var(--surface); border:1px solid var(--line); border-radius:12px; overflow:hidden;
+    box-shadow:var(--panel-shadow);
+  }
+  .signal .stripe{background:var(--dim)}
+  .signal[data-sev="crit"] .stripe{background:var(--crit)}
+  .signal[data-sev="warn"] .stripe{background:var(--warn)}
+  .signal[data-sev="good"] .stripe{background:var(--good)}
+  .signal .body{padding:17px 20px; display:flex; gap:20px; align-items:baseline; flex-wrap:wrap}
+  .signal .eyebrow{
+    font-family:var(--mono); font-size:10px; letter-spacing:.13em; text-transform:uppercase;
+    color:var(--dim); margin:0 0 5px;
+  }
+  .signal h2{
+    margin:0; font-family:var(--display); font-size:19px; font-weight:600;
+    letter-spacing:-.01em; line-height:1.3; text-wrap:balance;
+  }
+  .signal p{margin:6px 0 0; color:var(--muted); font-size:13.5px; max-width:62ch}
+  .signal .num{
+    font-family:var(--display); font-size:40px; font-weight:700; line-height:1;
+    letter-spacing:-.03em; font-variant-numeric:tabular-nums; flex:none;
+  }
+  .signal[data-sev="crit"] .num{color:var(--crit)}
+  .signal[data-sev="warn"] .num{color:var(--warn)}
+  .signal[data-sev="good"] .num{color:var(--good)}
+  .signal .num small{display:block; font-family:var(--mono); font-size:9.5px; font-weight:500;
+    letter-spacing:.1em; text-transform:uppercase; color:var(--dim); margin-top:7px}
+
+  /* ---------- panels ---------- */
+  .grid{display:grid; gap:20px; grid-template-columns:1fr; align-items:start; grid-auto-flow:row dense}
+  @media(min-width:760px){ .grid{grid-template-columns:repeat(2,1fr)} .panel.span2{grid-column:span 2} }
+  @media(min-width:1120px){ .grid{grid-template-columns:repeat(3,1fr)} .panel.span2b{grid-column:span 2} }
+  .panel{
+    background:var(--surface); border:1px solid var(--line); border-radius:12px;
+    box-shadow:var(--panel-shadow); display:flex; flex-direction:column;
+  }
+  .panel > header{
+    padding:14px 18px 12px; border-bottom:1px solid var(--line-soft);
+    display:flex; align-items:baseline; justify-content:space-between; gap:12px;
+  }
+  .panel > header h3{
+    margin:0; font-family:var(--display); font-size:15.5px; font-weight:600; letter-spacing:-.005em;
+  }
+  .panel > header .src{
+    font-family:var(--mono); font-size:9.5px; letter-spacing:.1em; text-transform:uppercase;
+    color:var(--dim); flex:none;
+  }
+  .panel > .content{padding:16px 18px 18px; display:flex; flex-direction:column; gap:15px; flex:1}
+
+  /* ---------- metric rows ---------- */
+  .metrics{display:grid; grid-template-columns:repeat(auto-fit,minmax(94px,1fr)); gap:14px 12px}
+  .metrics.m1{grid-template-columns:1fr}
+  .metrics.m4{grid-template-columns:repeat(2,1fr)}
+  .metrics.m5,.metrics.m6{grid-template-columns:repeat(3,1fr)}
+  .metric .k{
+    font-family:var(--mono); font-size:9.5px; letter-spacing:.1em; text-transform:uppercase;
+    color:var(--dim); margin:0 0 4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  .metric .v{
+    font-family:var(--display); font-size:23px; font-weight:600; letter-spacing:-.02em;
+    line-height:1.1; font-variant-numeric:tabular-nums;
+  }
+  .metric .v span{font-size:13px; font-weight:400; color:var(--muted); letter-spacing:0}
+  .metric .v.pos{color:var(--good)} .metric .v.neg{color:var(--crit)}
+
+  /* ---------- bars ---------- */
+  .bars{display:flex; flex-direction:column; gap:9px}
+  .bar-row{display:grid; grid-template-columns:1fr 42px; gap:11px; align-items:center}
+  .bar-row .label{
+    font-size:12.5px; color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  }
+  .bar-row .track{grid-column:1/-1; height:6px; border-radius:3px; background:var(--track); overflow:hidden}
+  .bar-row .fill{height:100%; border-radius:3px; background:var(--accent); min-width:2px}
+  .bar-row .count{
+    font-family:var(--mono); font-size:12px; text-align:right; color:var(--text);
+    font-variant-numeric:tabular-nums;
+  }
+
+  /* ---------- channel coverage ---------- */
+  .channels{display:grid; grid-template-columns:repeat(auto-fit,minmax(158px,1fr)); gap:11px}
+  .chan{
+    border:1px solid var(--line); border-radius:10px; padding:12px 13px;
+    display:flex; flex-direction:column; gap:7px; background:var(--surface-2);
+  }
+  .chan .name{font-weight:600; font-size:13.5px; display:flex; align-items:center; gap:7px}
+  .chan .dot{width:7px; height:7px; border-radius:50%; flex:none; background:var(--dim)}
+  .chan[data-on="yes"] .dot{background:var(--good); box-shadow:0 0 0 3px var(--good-soft)}
+  .chan[data-on="no"] .dot{background:var(--dim)}
+  .chan[data-on="err"] .dot{background:var(--crit); box-shadow:0 0 0 3px var(--crit-soft)}
+  .chan .note{font-size:11.5px; color:var(--muted); line-height:1.4}
+  .chan .handle{font-family:var(--mono); font-size:11px; color:var(--dim)}
+
+  .pill{
+    display:inline-flex; align-items:center; gap:5px; padding:2px 8px; border-radius:20px;
+    font-family:var(--mono); font-size:9.5px; letter-spacing:.07em; text-transform:uppercase;
+    border:1px solid transparent; white-space:nowrap;
+  }
+  .pill.on{color:var(--good); background:var(--good-soft); border-color:var(--good-soft)}
+  .pill.off{color:var(--dim); background:var(--surface-2); border-color:var(--line)}
+  .pill.warn{color:var(--warn); background:var(--warn-soft); border-color:var(--warn-soft)}
+  .pill.crit{color:var(--crit); background:var(--crit-soft); border-color:var(--crit-soft)}
+
+  /* ---------- lists ---------- */
+  .items{display:flex; flex-direction:column; gap:0; margin:0; padding:0; list-style:none}
+  .items li{
+    padding:11px 0; border-bottom:1px solid var(--line-soft);
+    display:grid; grid-template-columns:1fr auto; gap:4px 14px; align-items:baseline;
+  }
+  .items li:last-child{border-bottom:0; padding-bottom:0}
+  .items li:first-child{padding-top:0}
+  .items .t{font-size:13.5px; font-weight:500; line-height:1.4; text-wrap:balance}
+  .items .t a{color:inherit; text-decoration:none; border-bottom:1px solid transparent}
+  .items .t a:hover{border-bottom-color:var(--accent)}
+  .items .m{
+    font-family:var(--mono); font-size:11px; color:var(--dim); text-align:right;
+    font-variant-numeric:tabular-nums; white-space:nowrap;
+  }
+  .items .d{grid-column:1/-1; font-size:12px; color:var(--muted)}
+
+  /* ---------- states ---------- */
+  .skel{display:flex; flex-direction:column; gap:10px}
+  .skel i{
+    display:block; height:11px; border-radius:5px; background:var(--surface-2);
+    animation:pulse 1.7s ease-in-out infinite;
+  }
+  .skel i:nth-child(2){width:78%} .skel i:nth-child(3){width:56%} .skel i:nth-child(4){width:67%}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
+  @media (prefers-reduced-motion: reduce){ .skel i{animation:none} * {transition:none !important} }
+
+  .note-box{
+    border:1px solid var(--line); border-left:3px solid var(--dim); border-radius:8px;
+    padding:12px 14px; background:var(--surface-2); font-size:12.5px; color:var(--muted);
+    display:flex; flex-direction:column; gap:6px;
+  }
+  .note-box.crit{border-left-color:var(--crit)}
+  .note-box.warn{border-left-color:var(--warn)}
+  .note-box strong{color:var(--text); font-weight:600; font-size:13px}
+  .note-box code{font-family:var(--mono); font-size:11.5px; color:var(--accent-ink)}
+  .stale{
+    font-family:var(--mono); font-size:9.5px; letter-spacing:.07em; text-transform:uppercase;
+    color:var(--warn); display:inline-flex; gap:5px; align-items:center;
+  }
+  .foot{
+    color:var(--dim); font-size:12px; border-top:1px solid var(--line-soft); padding-top:16px;
+    display:flex; flex-direction:column; gap:5px;
+  }
+  .foot b{color:var(--muted); font-weight:600}
+  .scroll{overflow-x:auto}
+</style>
+
+<div class="wrap">
+
+  <div class="masthead">
+    <div class="ident">
+      <div class="monogram" aria-hidden="true">M&amp;M</div>
+      <div>
+        <h1>Control Room</h1>
+        <p class="sub" id="ident-sub">Motivated &amp; Miffed &middot; connecting to your accounts&hellip;</p>
+      </div>
+    </div>
+    <div class="status">
+      <div class="stamp" id="stamp">reading live data</div>
+      <button class="btn" id="refresh" type="button">Refresh</button>
+    </div>
+  </div>
+
+  <section class="signal" id="signal" data-sev="none" aria-live="polite">
+    <div class="stripe" aria-hidden="true"></div>
+    <div class="body">
+      <div style="flex:1; min-width:240px">
+        <p class="eyebrow">Needs your attention</p>
+        <h2 id="signal-title">Reading the last four weeks of newsletter data</h2>
+        <p id="signal-detail">The loudest number gets this slot: whichever metric is furthest from where it should be.</p>
+      </div>
+      <div class="num" id="signal-num">&mdash;<small id="signal-num-label">pending</small></div>
+    </div>
+  </section>
+
+  <div class="grid">
+
+    <section class="panel" id="p-news">
+      <header>
+        <h3>Newsletter health</h3>
+        <span class="src">beehiiv &middot; 4 wks</span>
+      </header>
+      <div class="content" id="c-news">
+        <div class="skel"><i></i><i></i><i></i><i></i></div>
+      </div>
+    </section>
+
+    <section class="panel" id="p-social">
+      <header>
+        <h3>Social performance</h3>
+        <span class="src">buffer &middot; 30 days</span>
+      </header>
+      <div class="content" id="c-social">
+        <div class="skel"><i></i><i></i><i></i><i></i></div>
+      </div>
+    </section>
+
+    <section class="panel" id="p-acq">
+      <header>
+        <h3>Where subscribers come from</h3>
+        <span class="src">beehiiv</span>
+      </header>
+      <div class="content" id="c-acq">
+        <div class="skel"><i></i><i></i><i></i><i></i></div>
+      </div>
+    </section>
+
+    <section class="panel span2" id="p-chan">
+      <header>
+        <h3>Channel coverage</h3>
+        <span class="src">buffer</span>
+      </header>
+      <div class="content" id="c-chan">
+        <div class="skel"><i></i><i></i></div>
+      </div>
+    </section>
+
+    <section class="panel" id="p-queue">
+      <header>
+        <h3>What's queued</h3>
+        <span class="src">buffer</span>
+      </header>
+      <div class="content" id="c-queue">
+        <div class="skel"><i></i><i></i><i></i></div>
+      </div>
+    </section>
+
+    <section class="panel" id="p-issues">
+      <header>
+        <h3>Recent issues</h3>
+        <span class="src">beehiiv</span>
+      </header>
+      <div class="content" id="c-issues">
+        <div class="skel"><i></i><i></i><i></i></div>
+      </div>
+    </section>
+
+    <section class="panel span2b" id="p-trend">
+      <header>
+        <h3>Topic radar</h3>
+        <span class="src">vidIQ &middot; shorts</span>
+      </header>
+      <div class="content" id="c-trend">
+        <div class="skel"><i></i><i></i><i></i></div>
+      </div>
+    </section>
+
+  </div>
+
+  <div class="foot">
+    <div><b>How this page works.</b> Every number is read live from your own beehiiv, Buffer and vidIQ accounts using your credentials when you open the page. Nothing is stored here and nothing is cached between viewers.</div>
+    <div><b>Reading the radar.</b> Topic radar shows YouTube Shorts velocity across all channels, so use it for what subjects are moving, never as a benchmark against your own reach.</div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var S_BEE = "beehiiv", S_BUF = "buffer", S_VID = "vidIQ for Claude";
+  var PUB_NAME = "Motivated and Miffed";
+  var mcp = null, unsubs = [], ids = {org:null, pub:null}, retried = {};
+
+  var $ = function(id){ return document.getElementById(id); };
+  function esc(s){
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+    });
+  }
+  function num(n){
+    return (typeof n === "number" && isFinite(n)) ? n.toLocaleString("en-US") : "—";
+  }
+  function pct(n, dp){
+    return (typeof n === "number" && isFinite(n)) ? n.toFixed(dp == null ? 2 : dp) + "%" : "—";
+  }
+  function set(id, html){ var el = $(id); if (el) el.innerHTML = html; }
+
+  function metric(k, v, cls){
+    return '<div class="metric"><p class="k">' + esc(k) + '</p>' +
+           '<div class="v ' + (cls || "") + '">' + v + "</div></div>";
+  }
+  function fmtDate(iso){
+    var d = new Date(iso);
+    if (isNaN(d.getTime())) return "—";
+    return d.toLocaleDateString("en-US", {month:"short", day:"numeric"});
+  }
+  function fmtWhen(ms){
+    var d = new Date(ms);
+    if (isNaN(d.getTime())) return "";
+    return d.toLocaleTimeString("en-US", {hour:"numeric", minute:"2-digit"});
+  }
+
+  /* ---- error copy: one distinct fix per code ---- */
+  function errCopy(err, server){
+    var c = err && err.code, s = esc(server || (err && err.server) || "the connector");
+    var known = {
+      needs_reauth:      ["Reconnect " + s, "Its access expired. Reconnect it in claude.ai Settings → Connectors, then refresh.", "crit"],
+      server_not_connected:["Add " + s, "No " + s + " connector is available on this account. Add it in claude.ai Settings → Connectors.", ""],
+      selection_required:["Choose a " + s + " account", "You have more than one " + s + " connector. Pick which one this page should read, then refresh.", "warn"],
+      server_not_found:  [s + " is gone", "That connector no longer exists upstream. Re-add it to bring this panel back.", ""],
+      not_in_manifest:   [s + " is switched off here", "This page is not allowed to read " + s + " for you. Turn it on for this artifact to see the panel.", ""],
+      blocked_by_policy: [s + " is blocked", "An organization policy blocks this tool for your account.", ""],
+      approval_required: ["Needs approval", "Policy wants per-call approval for this tool, which artifacts cannot ask for yet.", "warn"],
+      tool_error:        [s + " refused the request", (err && err.message) ? err.message : "The tool ran and reported a failure.", "warn"],
+      rate_limited:      ["Slow down", "This page hit its connector budget. Give it a moment, then refresh.", "warn"],
+      server_unavailable:[s + " is unreachable", "The service did not answer. This usually clears on its own.", "warn"],
+      cancelled:         ["Request stopped", "That read was cancelled before it finished.", ""],
+      not_granted:       ["Live data is off", "This view did not grant connector access, so the page cannot read your accounts.", ""],
+      capability_disabled:["Live data unavailable here", "This viewer cannot run connector calls. Open the page on claude.ai to see live numbers.", ""],
+      capability_removed:["Live data unavailable here", "This viewer cannot run connector calls. Open the page on claude.ai to see live numbers.", ""]
+    };
+    var e = known[c] || [s + " could not be read", (err && err.message) ? err.message : "An unexpected error came back.", ""];
+    return {title:e[0], detail:e[1], tone:e[2]};
+  }
+  function errHtml(err, server){
+    var e = errCopy(err, server);
+    return '<div class="note-box ' + e.tone + '"><strong>' + esc(e.title) + "</strong><div>" +
+           esc(e.detail) + '</div><div><code>' + esc((err && err.code) || "unknown") + "</code></div></div>";
+  }
+  function staleTag(res){
+    if (!res || !res.cache || typeof res.cache.storedAt !== "number") return "";
+    return '<div class="stale">as of ' + esc(fmtWhen(res.cache.storedAt)) +
+           (res.cache.revalidating ? " · refreshing" : "") + "</div>";
+  }
+
+  /* ---- watch helper: contains each failure in its own panel ---- */
+  function watch(server, tool, input, target, render, interval){
+    var key = server + "|" + tool, hasData = false;
+    var un = mcp.watchTool(server, tool, input, function(ev){
+      if (ev.type === "data"){
+        hasData = true;
+        try { render(ev.result.payload, ev.result); }
+        catch (e){ set(target, errHtml({code:"tool_error", message:"This panel could not read the shape that came back."}, server)); }
+        return;
+      }
+      var code = ev.error && ev.error.code;
+      var authz = code === "needs_reauth" || code === "server_not_connected" ||
+                  code === "blocked_by_policy" || code === "approval_required" ||
+                  code === "not_in_manifest" || code === "selection_required";
+      if (authz || !hasData) set(target, errHtml(ev.error, server));
+      if (ev.error && ev.error.retryable === true && !retried[key]){
+        retried[key] = true;
+        setTimeout(function(){ mcp.invalidate(server, tool, input).catch(function(){}); },
+                   (ev.error.retryAfterMs || 2500) + Math.random() * 800);
+      }
+    }, {cache:{staleTime:120000}, refetchInterval:interval || 300000});
+    unsubs.push(un);
+  }
+
+  /* ---------- renderers ---------- */
+  function renderNews(p, res){
+    if (!p || typeof p !== "object") throw new Error("shape");
+    var w = p.last_4_weeks || {};
+    var subs = p.current_active_subscribers;
+    var net = w.net_subscribers;
+    var html = '<div class="metrics m4">' +
+      metric("Subscribers", num(subs)) +
+      metric("Open rate", pct(w.open_rate)) +
+      metric("Click rate", pct(w.click_rate), (typeof w.click_rate === "number" && w.click_rate < 1) ? "neg" : "") +
+      metric("Net 4 wks", (typeof net === "number" ? (net > 0 ? "+" : "") + num(net) : "—"),
+             (typeof net === "number" && net > 0) ? "pos" : (typeof net === "number" && net < 0 ? "neg" : "")) +
+      "</div>";
+
+    html += '<div class="bars">' + bar("Joined", w.new_subscribers, Math.max(w.new_subscribers || 0, w.churned_subscribers || 0), "var(--good)") +
+            bar("Left", w.churned_subscribers, Math.max(w.new_subscribers || 0, w.churned_subscribers || 0), "var(--crit)") + "</div>";
+
+    if (p.earnings) html += '<div class="note-box"><strong>Earnings, last 4 weeks: ' + esc(p.earnings) + "</strong>" +
+      "<div>Ad revenue against " + esc(num(subs)) + " active subscribers. Worth knowing before you price a sponsor slot.</div></div>";
+    html += staleTag(res);
+    set("c-news", html);
+    updateSignal(w, subs);
+    var sub = $("ident-sub");
+    if (sub) sub.innerHTML = "Motivated &amp; Miffed &middot; <b>" + esc(num(subs)) + "</b> active subscribers";
+  }
+
+  function bar(label, value, max, color){
+    var v = typeof value === "number" ? value : 0;
+    var w = max > 0 ? Math.max(2, Math.round((v / max) * 100)) : 0;
+    return '<div class="bar-row"><span class="label">' + esc(label) + '</span>' +
+           '<span class="count">' + esc(num(value)) + '</span>' +
+           '<span class="track"><span class="fill" style="width:' + w + '%;background:' + color + '"></span></span></div>';
+  }
+
+  function updateSignal(w, subs){
+    var el = $("signal");
+    if (!el || !w) return;
+    var sev = "good", title, detail, val, label;
+    if (typeof w.click_rate === "number" && w.click_rate < 1){
+      sev = "crit"; val = pct(w.click_rate); label = "click rate";
+      title = "People open the issue and then don't click anything";
+      detail = "A " + pct(w.open_rate) + " open rate against a " + pct(w.click_rate) +
+        " click rate means the subject lines are working and the links are not. The fix lives in the body: fewer links, placed higher, each one saying what is on the other side.";
+    } else if (typeof w.churned_subscribers === "number" && typeof w.new_subscribers === "number" &&
+               w.new_subscribers > 0 && w.churned_subscribers / w.new_subscribers > 0.5){
+      sev = "warn"; val = num(w.churned_subscribers); label = "unsubscribes";
+      title = "You are losing subscribers about as fast as you add them";
+      detail = "For every " + num(w.new_subscribers) + " who joined, " + num(w.churned_subscribers) +
+        " left. Growth work is wasted until that gap closes, so look at the first three issues a new subscriber receives.";
+    } else if (typeof w.open_rate === "number" && w.open_rate < 20){
+      sev = "warn"; val = pct(w.open_rate); label = "open rate";
+      title = "Open rate is under twenty percent";
+      detail = "Subject lines are the lever here. Deliverability is worth ruling out first if this dropped suddenly.";
+    } else {
+      val = num(subs); label = "subscribers";
+      title = "Nothing is on fire this week";
+      detail = "Opens, clicks and churn are all inside normal range, so spend the week on the thing you have been putting off.";
+    }
+    el.setAttribute("data-sev", sev);
+    set("signal-title", esc(title));
+    set("signal-detail", esc(detail));
+    set("signal-num", esc(val) + '<small>' + esc(label) + "</small>");
+  }
+
+  function renderSocial(p, res){
+    if (!p || !Array.isArray(p.metrics)) throw new Error("shape");
+    if (!p.metrics.length){
+      set("c-social", '<div class="note-box"><strong>No posts in this window</strong><div>' +
+        "Buffer has no published posts in the last 30 days, so there is nothing to measure yet.</div></div>");
+      return;
+    }
+    var want = {postCount:"Posts", views:"Views", reactions:"Reactions", comments:"Comments", engagementRate:"Eng. rate"};
+    var order = ["postCount","views","engagementRate","reactions","comments"];
+    var by = {};
+    p.metrics.forEach(function(m){ by[m.type] = m; });
+    var shown = order.filter(function(t){ return by[t]; }).length;
+    var html = '<div class="metrics m' + shown + '">';
+    order.forEach(function(t){
+      var m = by[t];
+      if (!m) return;
+      var v = m.unit === "percentage" ? pct(m.value, 1) : num(m.value);
+      html += metric(want[t] || m.name, v);
+    });
+    html += "</div>";
+    var eng = by.engagementRate;
+    if (eng && typeof eng.value === "number"){
+      html += '<div class="note-box"><strong>' + esc(pct(eng.value, 1)) + " engagement rate</strong><div>" +
+        "Measured against " + esc(num(by.views ? by.views.value : 0)) + " views on " +
+        esc(num(by.postCount ? by.postCount.value : 0)) + " posts. Short-form engagement above roughly 5% is healthy, " +
+        "so the reach is the constraint here rather than the content.</div></div>";
+    }
+    if (p.metricsUpdatedAt){
+      html += '<div class="stale">Buffer refreshes these daily · as of ' +
+              esc(fmtDate(p.metricsUpdatedAt)) + "</div>";
+    }
+    set("c-social", html);
+  }
+
+  function renderAcq(p, res){
+    if (!p || typeof p !== "object") throw new Error("shape");
+    var w = p.last_4_weeks || {}, list = w.acquisition_sources || [];
+    if (!list.length){
+      set("c-acq", '<div class="note-box"><strong>No new sources this window</strong><div>' +
+        "beehiiv logged no attributed signups in the last four weeks.</div></div>");
+      return;
+    }
+    var max = list.reduce(function(a, s){ return Math.max(a, s.count || 0); }, 0);
+    var total = list.reduce(function(a, s){ return a + (s.count || 0); }, 0);
+    var recs = list.filter(function(s){ return /recommendation/i.test(s.source || ""); })
+                   .reduce(function(a, s){ return a + (s.count || 0); }, 0);
+    var html = '<div class="bars">';
+    list.slice(0, 6).forEach(function(s){
+      var label = String(s.source || "unknown")
+        .replace(/^recommendation:\s*/i, "")
+        .replace(/\s*\/\s*referral$/i, "");
+      html += bar(label, s.count, max, "var(--accent)");
+    });
+    html += "</div>";
+    if (total > 0 && recs === total){
+      html += '<div class="note-box warn"><strong>Every signup came from a recommendation</strong><div>' +
+        "All " + esc(num(total)) + " attributed subscribers arrived through other newsletters. That is cheap growth and " +
+        "someone else's audience: one partner changing their mind takes the whole pipeline with it. Worth building one " +
+        "source you own.</div></div>";
+    }
+    html += staleTag(res);
+    set("c-acq", html);
+  }
+
+  function renderQueue(p, res){
+    if (!p || !p.edges) throw new Error("shape");
+    var rows = p.edges.map(function(e){ return e.node; }).filter(Boolean);
+    if (!rows.length){
+      set("c-queue", '<div class="note-box warn"><strong>The queue is empty</strong><div>' +
+        "Nothing is scheduled or drafted in Buffer. Whatever posts next has to be written first, " +
+        "so this is the gap to fill today.</div></div>" + staleTag(res));
+      return;
+    }
+    var html = '<ul class="items">';
+    rows.forEach(function(r){
+      var txt = String(r.text || "").replace(/\s+/g, " ").trim();
+      if (txt.length > 108) txt = txt.slice(0, 108) + "…";
+      html += "<li><span class=\"t\">" + esc(txt || "(no text)") + "</span>" +
+        '<span class="m">' + esc(r.channelService || "") + "<br>" + esc(r.dueAt ? fmtDate(r.dueAt) : r.status) + "</span></li>";
+    });
+    html += "</ul>" + staleTag(res);
+    set("c-queue", html);
+  }
+
+  var TARGETS = [
+    {svc:"instagram", name:"Instagram"},
+    {svc:"tiktok",    name:"TikTok"},
+    {svc:"youtube",   name:"YouTube"},
+    {svc:"twitter",   name:"X"},
+    {svc:"threads",   name:"Threads"},
+    {svc:"linkedin",  name:"LinkedIn"}
+  ];
+  function renderChannels(p, res){
+    if (!Array.isArray(p)) throw new Error("shape");
+    var live = {};
+    p.forEach(function(c){ if (c && c.service) live[String(c.service).toLowerCase()] = c; });
+    var html = '<div class="channels">';
+    TARGETS.forEach(function(t){
+      var c = live[t.svc];
+      var on = c ? (c.isDisconnected ? "err" : "yes") : "no";
+      var pill = c ? (c.isDisconnected ? '<span class="pill crit">reconnect</span>'
+                                       : '<span class="pill on">live</span>')
+                   : '<span class="pill off">not connected</span>';
+      var note = c ? (c.isDisconnected ? "Buffer lost access to this account."
+                                       : "Posting through Buffer.")
+                   : "Connect in Buffer to publish here.";
+      html += '<div class="chan" data-on="' + on + '"><div class="name"><span class="dot"></span>' +
+        esc(t.name) + "</div>" + pill +
+        '<div class="note">' + esc(note) + "</div>" +
+        (c && c.displayName ? '<div class="handle">' + esc(c.displayName) + "</div>" : "") +
+        "</div>";
+    });
+    html += "</div>";
+    var count = p.filter(function(c){ return c && !c.isDisconnected; }).length;
+    var missing = TARGETS.filter(function(t){ return !live[t.svc]; }).map(function(t){ return t.name; });
+    if (missing.length){
+      html += '<div class="note-box"><strong>' + esc(String(count)) + " of " + TARGETS.length +
+        " channels live</strong><div>" + esc(missing.join(", ")) +
+        " are not connected. Buffer's free plan caps you at three channels, so adding these needs a paid plan " +
+        "before the connection will hold.</div></div>";
+    }
+    html += staleTag(res);
+    set("c-chan", html);
+  }
+
+  function renderIssues(p, res){
+    if (!p || !Array.isArray(p.posts)) throw new Error("shape");
+    if (!p.posts.length){
+      set("c-issues", '<div class="note-box"><strong>No published issues</strong><div>' +
+        "beehiiv has nothing published for this publication yet.</div></div>");
+      return;
+    }
+    var html = "";
+    if (p.pagination && typeof p.pagination.total === "number"){
+      html += '<div class="metrics m1">' + metric("Issues published", num(p.pagination.total)) + "</div>";
+    }
+    html += '<ul class="items">';
+    p.posts.slice(0, 5).forEach(function(po){
+      var link = po.editor_url
+        ? '<a href="' + esc(po.editor_url) + '" target="_blank" rel="noopener noreferrer">' + esc(po.title || "(untitled)") + "</a>"
+        : esc(po.title || "(untitled)");
+      var tags = (po.content_tags || []).map(function(t){ return t.display; }).filter(Boolean).join(" · ");
+      html += '<li><span class="t">' + link + '</span><span class="m">' +
+        esc(po.scheduled_at ? fmtDate(po.scheduled_at) : "") + "</span>" +
+        (tags ? '<span class="d">' + esc(tags) + "</span>" : "") + "</li>";
+    });
+    html += "</ul>" + staleTag(res);
+    set("c-issues", html);
+  }
+
+  function renderTrend(p, res){
+    if (!p || !Array.isArray(p.videos)) throw new Error("shape");
+    if (!p.videos.length){
+      set("c-trend", '<div class="note-box"><strong>Nothing moving right now</strong><div>' +
+        "vidIQ found no Shorts gaining velocity on this topic. Narrower topics go quiet for days at a time; " +
+        "check back rather than reading it as a dead subject.</div></div>");
+      return;
+    }
+    var html = '<ul class="items">';
+    p.videos.slice(0, 4).forEach(function(v){
+      var t = String(v.videoTitle || "").replace(/\s*#\S+/g, "").replace(/\s+/g, " ").trim();
+      if (t.length > 74) t = t.slice(0, 74) + "…";
+      var vph = typeof v.vph === "number" ? Math.round(v.vph) : null;
+      html += '<li><span class="t">' +
+        (v.videoId ? '<a href="https://www.youtube.com/watch?v=' + esc(v.videoId) +
+                     '" target="_blank" rel="noopener noreferrer">' + esc(t) + "</a>" : esc(t)) +
+        '</span><span class="m">' + (vph != null ? esc(num(vph)) + "/hr" : "—") + "</span>" +
+        '<span class="d">' + esc(v.channelTitle || "") +
+        (typeof v.subscriberCount === "number" ? " · " + esc(num(v.subscriberCount)) + " subs" : "") +
+        "</span></li>";
+    });
+    html += "</ul>" + staleTag(res);
+    set("c-trend", html);
+  }
+
+  /* ---------- boot ---------- */
+  function allPanels(html){
+    ["c-news","c-social","c-acq","c-queue","c-chan","c-issues","c-trend"].forEach(function(id){ set(id, html); });
+  }
+
+  function noLive(err){
+    var e = errCopy(err || {code:"capability_disabled"}, "your connectors");
+    set("signal-title", esc(e.title));
+    set("signal-detail", esc(e.detail));
+    set("signal-num", "&mdash;<small>offline</small>");
+    set("stamp", "live data offline");
+    set("ident-sub", "Motivated &amp; Miffed &middot; control room");
+    allPanels('<div class="note-box"><strong>' + esc(e.title) + "</strong><div>" + esc(e.detail) + "</div></div>");
+  }
+
+  function dayRange(days){
+    var end = new Date(), start = new Date(end.getTime() - days * 86400000);
+    function d(x){ return x.toISOString().slice(0, 10); }
+    return {start:d(start) + "T00:00:00Z", end:d(end) + "T23:59:59Z"};
+  }
+
+  async function boot(){
+    if (!window.claude || typeof window.claude.use !== "function"){ noLive({code:"capability_disabled"}); return; }
+    try { mcp = await window.claude.use("mcp"); }
+    catch (e){ mcp = null; }
+    if (!mcp){ noLive({code:"capability_disabled"}); return; }
+
+    set("stamp", "reading your accounts");
+
+    var opts = {cache:{staleTime:120000}};
+
+    // beehiiv: resolve the publication, then light up its panels.
+    mcp.callTool(S_BEE, "list_publications", {}, opts).then(function(res){
+      var list = res.payload;
+      if (!Array.isArray(list) || !list.length) throw {code:"tool_error", message:"No beehiiv publications on this account."};
+      var hit = list.filter(function(x){ return x && x.name === PUB_NAME; })[0] || list[0];
+      ids.pub = hit.id;
+      watch(S_BEE, "get_publication_stats",
+        {publication_id:ids.pub, time_period:"last_4_weeks", time_zone:"Pacific/Honolulu"},
+        "c-news", renderNews);
+      watch(S_BEE, "get_publication_stats",
+        {publication_id:ids.pub, time_period:"last_4_weeks", time_zone:"Pacific/Honolulu"},
+        "c-acq", renderAcq, 330000);
+      watch(S_BEE, "list_posts",
+        {publication_id:ids.pub, status:"published", per_page:5, order_by:"newest_first"},
+        "c-issues", renderIssues);
+    }).catch(function(err){
+      ["c-news","c-acq","c-issues"].forEach(function(id){ set(id, errHtml(err, S_BEE)); });
+      var e = errCopy(err, S_BEE);
+      set("signal-title", esc(e.title));
+      set("signal-detail", esc(e.detail));
+      set("signal-num", "&mdash;<small>no data</small>");
+    });
+
+    // buffer: resolve the organization, then light up its panels.
+    mcp.callTool(S_BUF, "get_account", {}, opts).then(function(res){
+      var acct = res.payload;
+      var orgs = acct && acct.organizations;
+      if (!Array.isArray(orgs) || !orgs.length) throw {code:"tool_error", message:"No Buffer organization on this account."};
+      ids.org = orgs[0].id;
+      var r = dayRange(30);
+      watch(S_BUF, "list_channels", {organizationId:ids.org}, "c-chan", renderChannels);
+      watch(S_BUF, "get_aggregated_post_metrics",
+        {organizationId:ids.org, startDateTime:r.start, endDateTime:r.end},
+        "c-social", renderSocial);
+      watch(S_BUF, "list_posts",
+        {organizationId:ids.org, status:["scheduled","draft","needs_approval"], first:6,
+         sort:[{field:"dueAt", direction:"asc"}]},
+        "c-queue", renderQueue);
+    }).catch(function(err){
+      ["c-chan","c-social","c-queue"].forEach(function(id){ set(id, errHtml(err, S_BUF)); });
+    });
+
+    // vidIQ needs no account lookup.
+    watch(S_VID, "vidiq_trending_videos",
+      {videoFormat:"short", titleQuery:"productivity", limit:4, sortBy:"vph"},
+      "c-trend", renderTrend, 900000);
+
+    set("stamp", "live · refreshes every 5 min");
+  }
+
+  var btn = $("refresh");
+  if (btn) btn.addEventListener("click", function(){
+    if (!mcp) return;
+    btn.disabled = true;
+    btn.textContent = "Refreshing…";
+    retried = {};
+    mcp.invalidate().catch(function(){}).then(function(){
+      setTimeout(function(){ btn.disabled = false; btn.textContent = "Refresh"; }, 1400);
+    });
+  });
+
+  boot();
+})();
+</script>
