@@ -35,3 +35,10 @@ post draft for Instagram or TikTok unless it carries an image or video, and YouT
 a video plus a title and category, so a text draft cannot exist as a post draft on any of
 the three connected channels. Ideas accept text with platform targeting, allow 100 on the
 current plan, and match the workflow already in use in the account.
+
+## Adding the forge to the flywheel
+
+Once `content/personal-inventory.md` has real material in it, update the repurposing flywheel prompt
+to load the `mm-shortform-forge` skill and read the inventory before drafting. The flywheel currently
+repurposes whatever issue just published. The forge instead starts from whichever tracked number is
+furthest behind, which is the more useful default once there is enough personal material to draft from.
