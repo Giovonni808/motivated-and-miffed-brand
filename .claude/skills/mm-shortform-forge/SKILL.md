@@ -17,16 +17,16 @@ The engine that turns a measured problem into posting-ready content.
 
 Three inputs, always. A draft missing any one of them is generic:
 
-1. **The opportunity** — a number that is behind, read live, not guessed.
-2. **The proven format** — a template with a documented outlier track record on Gio's platforms.
-3. **The personal anchor** — a specific thing only Gio can say.
+1. **The opportunity** : a number that is behind, read live, not guessed.
+2. **The proven format** : a template with a documented outlier track record on Gio's platforms.
+3. **The personal anchor** : a specific thing only Gio can say.
 
 Load `gio-brand-voice` for voice, and `mm-carousel-cinematic` for any Instagram carousel brief.
 This skill governs what gets drafted and why. Those govern how it sounds and looks.
 
 ---
 
-## STEP 1 — Name the opportunity
+## STEP 1 : Name the opportunity
 
 Read the live numbers before drafting. Never open with a topic; open with a deficit.
 
@@ -48,7 +48,7 @@ observance in the control room's date panel instead.
 
 ---
 
-## STEP 2 — Pull a format with a track record
+## STEP 2 : Pull a format with a track record
 
 Never invent a format. Pull one that already outperformed on Instagram or TikTok.
 
@@ -81,7 +81,7 @@ right to ask. It is also cheap to make. Reach for it when click rate is the defi
 
 ---
 
-## STEP 3 — Attach a personal anchor
+## STEP 3 : Attach a personal anchor
 
 The format is borrowed. The anchor cannot be. Match the deficit to a real thing Gio has done.
 
@@ -97,36 +97,52 @@ The format is borrowed. The anchor cannot be. Match the deficit to a real thing 
 | 500K+ views | Commercial work for Vacations Hawaiʻi, Jack in the Box | Reach, what actually travels |
 | Two worlds | Government comms and commercial production at once | An angle almost nobody else has |
 
-### Check the enrichment file
+### Check the enrichment file first
 
-`content/personal-inventory.md` in this repo holds present-tense material Gio has supplied: what he is
-working on now, systems of his that failed, numbers he owns, opinions he will defend, and what he can
-actually shoot. Read it before drafting. It is the difference between a draft that sounds like him and
-one that sounds like his résumé.
+`content/personal-inventory.md` holds present-tense material Gio has supplied, and it outranks the
+historical table above. Read it before drafting. It is the difference between a draft that sounds like
+him and one that sounds like his résumé.
+
+Live anchors as of 2026-09-09:
+
+| Anchor | The specific detail | Earns him the right to talk about |
+|---|---|---|
+| The frog reversal | Published "eat the frog" advice to IG and TikTok on 2025-09-20, now thinks it fails | Advice that stopped working, naming the real blocker |
+| Name the elephant | His own reframe: the frog is the task, the elephant is why you have not touched it | The willpower gap, avoidance |
+| The green folder | Built a color-coded Drive folder for M&M material, then stopped feeding it because work drained him | Systems that fail for human reasons |
+| Digital asset hygiene | His term. Footage scattered across phone, laptop and work projects | Why capture beats organization |
+| Notion to Obsidian | Paid for the AI add-on when it cost extra, quit because the lingo felt impermanent | Tool permanence, owning your format |
+
+The frog reversal is spendable once. It works because it is the first time. Do not build a habit of
+retracting posts for engagement.
 
 ### When the anchor is missing, ask
 
-Every story on file is historical. If a draft needs something present-tense and the enrichment file
-does not have it, **stop and ask Gio directly.** Ask two or three open questions, never a
+If a draft needs something present-tense the inventory does not have, **stop and ask Gio directly.** Ask two or three open questions, never a
 questionnaire. Then write the answers into `content/personal-inventory.md` so the next run has them.
 
 Do not paper over a missing anchor with a general observation. That is the exact failure this skill
 exists to prevent.
 
+**Still unanswered as of 2026-09-09**, so ask when relevant: what he opens every day and for what;
+what government communications teaches that creators would not expect; whether he will go on camera;
+how he feels about voiceover; and realistic time per piece. Until the last three are answered, prefer
+formats rated under an hour that need no new capture.
+
 ---
 
-## STEP 4 — Draft
+## STEP 4 : Draft
 
 Produce all three unless told otherwise:
 
-**Instagram carousel** — follow `mm-carousel-cinematic` exactly. Caption plus slide list. Leave hex
+**Instagram carousel** : follow `mm-carousel-cinematic` exactly. Caption plus slide list. Leave hex
 values and font names out of the brief.
 
-**Short-form script** (TikTok and Reels) — under 45 seconds. Write the first three seconds as a
+**Short-form script** (TikTok and Reels) : under 45 seconds. Write the first three seconds as a
 separate labelled hook line, because that is what the outlier data measures. Mark where a screen
 recording or b-roll goes.
 
-**LinkedIn** — plain text, no hashtag block. This is where the government-plus-production angle lands
+**LinkedIn** : plain text, no hashtag block. This is where the government-plus-production angle lands
 hardest, so use it.
 
 ### Non-negotiables
@@ -145,7 +161,7 @@ hardest, so use it.
 
 ---
 
-## STEP 5 — Self-check before filing
+## STEP 5 : Self-check before filing
 
 Read each draft back and answer these. A no means rewrite, not ship.
 
@@ -158,14 +174,14 @@ Read each draft back and answer these. A no means rewrite, not ship.
 
 ---
 
-## STEP 6 — File it
+## STEP 6 : File it
 
 Write each draft as a Buffer **idea**, never a post:
 
 ```
 create_idea
   organizationId: from get_account
-  content.title: "<issue or angle> — <format>"
+  content.title: "<issue or angle> : <format>"
   content.text: the full draft
   content.services: ["instagram"] | ["tiktok"] | ["linkedin"]
 ```

@@ -1,4 +1,4 @@
-# Draft set — 2026-09-09
+# Draft set 1 (2026-09-09)
 
 **Deficit:** click rate 0.35% against a 1.5% target. 253 people opened the last issue. One clicked.
 **Formats pulled:** credibility anchor then payload (61x creator median, under an hour), workflow
@@ -10,7 +10,7 @@ present-tense material in the rotation.
 
 ---
 
-## 1. Short-form script — TikTok and Reels
+## 1. Short-form script: TikTok and Reels
 
 **Format:** credibility anchor then payload. Text overlay on b-roll, or talking head if available.
 **Effort:** under an hour with existing editing-timeline b-roll.
