@@ -84,3 +84,23 @@ a yearly refresh. The panel warns when every date on file has passed.
   brand: Instagram and TikTok are the live channels, and it reports hook, format, effort and
   audience per outlier.
 - **Buffer free-plan insights cap at 31 days**, so any longer window fails with a plan error.
+
+## Buffer write paths
+
+`create_post` supports `saveToDraft`, but a post draft still has to satisfy the platform's
+minimum: Instagram and TikTok require an image or video, and YouTube requires a video plus
+title and category. All three connected channels therefore reject a text-only draft.
+
+`create_idea` accepts text with `content.services` platform targeting and no asset, and the
+current plan allows 100 ideas against 10 scheduled posts. Ideas are the correct destination
+for agent-written drafts, and the account already uses them this way.
+
+## Routines cannot be created from a session
+
+`create_trigger` succeeds but stores no connectors, so the fired session has no
+`mcp__*` tools and fails immediately. The `connectors` parameter is not available for this
+organization, and connectors on triggers made this way are limited to what the calling
+session can pass through, which is nothing here.
+
+Both routines must be created in the claude.ai Routines UI, where connectors attach
+properly. The prompts are kept in `routines/`.

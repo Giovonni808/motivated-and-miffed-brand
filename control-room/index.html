@@ -108,12 +108,11 @@
   .grid{display:grid; gap:20px; grid-template-columns:1fr; align-items:start; grid-auto-flow:row dense}
   @media(min-width:760px){
     .grid{grid-template-columns:repeat(2,1fr)}
-    .panel.span2,.panel.span2b,.panel.spanFull{grid-column:span 2}
+    .panel.spanFull{grid-column:span 2}
   }
   @media(min-width:1120px){
     .grid{grid-template-columns:repeat(3,1fr)}
     .panel.spanFull{grid-column:1/-1}
-    .panel.span2b{grid-column:span 2}
   }
   .panel{
     background:var(--surface); border:1px solid var(--line); border-radius:12px;
@@ -232,6 +231,48 @@
   .foot b{color:var(--muted); font-weight:600}
   .scroll{overflow-x:auto}
 
+  /* ---------- target meters ---------- */
+  .targets{
+    background:var(--surface); border:1px solid var(--line); border-radius:12px;
+    box-shadow:var(--panel-shadow);
+  }
+  .targets > header{
+    padding:14px 18px 12px; border-bottom:1px solid var(--line-soft);
+    display:flex; align-items:baseline; justify-content:space-between; gap:12px;
+  }
+  .targets > header h3{margin:0; font-family:var(--display); font-size:15.5px; font-weight:600}
+  .targets > header .src{
+    font-family:var(--mono); font-size:9.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--dim);
+  }
+  .tgt-grid{
+    display:grid; gap:20px; padding:18px;
+    grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+  }
+  .tgt{display:flex; flex-direction:column; gap:9px}
+  .tgt-head{display:flex; align-items:center; justify-content:space-between; gap:10px}
+  .tgt-name{font-weight:600; font-size:13.5px}
+  .tgt-nums{display:flex; align-items:baseline; gap:8px; flex-wrap:wrap}
+  .tgt-cur{
+    font-family:var(--display); font-size:27px; font-weight:700; letter-spacing:-.025em;
+    line-height:1; font-variant-numeric:tabular-nums; color:var(--text);
+  }
+  .tgt-goal{
+    font-family:var(--mono); font-size:10.5px; letter-spacing:.04em; text-transform:uppercase;
+    color:var(--dim);
+  }
+  .meter{
+    height:6px; border-radius:3px; background:var(--track); overflow:hidden;
+    display:flex; align-items:stretch;
+  }
+  .meter-fill{border-radius:3px; min-width:3px; background:var(--dim)}
+  .tgt[data-st="hit"] .meter-fill{background:var(--good)}
+  .tgt[data-st="close"] .meter-fill{background:var(--warn)}
+  .tgt[data-st="behind"] .meter-fill{background:var(--crit)}
+  .tgt-why{font-size:12px; color:var(--muted); line-height:1.45}
+  .tgt-hist{
+    font-family:var(--mono); font-size:10px; letter-spacing:.05em; text-transform:uppercase; color:var(--dim);
+  }
+
   /* ---------- data tables ---------- */
   .tbl{width:100%; border-collapse:collapse; font-size:13px}
   .tbl th{
@@ -307,6 +348,16 @@
     </div>
   </section>
 
+  <section class="targets" id="targets" aria-live="polite">
+    <header>
+      <h3>What we're improving</h3>
+      <span class="src">live vs target</span>
+    </header>
+    <div class="tgt-grid" id="c-targets">
+      <div class="skel"><i></i><i></i><i></i></div>
+    </div>
+  </section>
+
   <div class="grid">
 
     <section class="panel" id="p-news">
@@ -339,16 +390,6 @@
       </div>
     </section>
 
-    <section class="panel spanFull" id="p-chan">
-      <header>
-        <h3>Channel coverage</h3>
-        <span class="src">buffer</span>
-      </header>
-      <div class="content" id="c-chan">
-        <div class="skel"><i></i><i></i></div>
-      </div>
-    </section>
-
     <section class="panel" id="p-queue">
       <header>
         <h3>What's queued</h3>
@@ -359,12 +400,12 @@
       </div>
     </section>
 
-    <section class="panel span2b" id="p-issues">
+    <section class="panel" id="p-drafts">
       <header>
-        <h3>Recent issues</h3>
-        <span class="src">beehiiv</span>
+        <h3>Drafts waiting</h3>
+        <span class="src">buffer ideas</span>
       </header>
-      <div class="content" id="c-issues">
+      <div class="content" id="c-drafts">
         <div class="skel"><i></i><i></i><i></i></div>
       </div>
     </section>
@@ -379,10 +420,30 @@
       </div>
     </section>
 
-    <section class="panel span2b" id="p-trend">
+    <section class="panel spanFull" id="p-chan">
+      <header>
+        <h3>Channel coverage</h3>
+        <span class="src">buffer</span>
+      </header>
+      <div class="content" id="c-chan">
+        <div class="skel"><i></i><i></i></div>
+      </div>
+    </section>
+
+    <section class="panel spanFull" id="p-issues">
+      <header>
+        <h3>Recent issues</h3>
+        <span class="src">beehiiv</span>
+      </header>
+      <div class="content" id="c-issues">
+        <div class="skel"><i></i><i></i><i></i><i></i><i></i></div>
+      </div>
+    </section>
+
+    <section class="panel spanFull" id="p-trend">
       <header>
         <h3>Topic radar</h3>
-        <span class="src">vidIQ &middot; shorts</span>
+        <span class="src">vidIQ &middot; outliers</span>
       </header>
       <div class="content" id="c-trend">
         <div class="skel"><i></i><i></i><i></i></div>
@@ -494,6 +555,63 @@
     unsubs.push(un);
   }
 
+  /* ---------- targets ----------
+     Goals are set here. Change a `goal` to move the bar. */
+  var TARGETS = [
+    {key:"click", name:"Click rate", goal:1.5, kind:"pct", dp:2,
+     why:"Where newsletter revenue actually comes from. The weakest number in the stack right now."},
+    {key:"owned", name:"Owned-source signups", goal:15, kind:"num", dp:0,
+     why:"Subscribers from sources you control, counted apart from other newsletters' referrals."},
+    {key:"views", name:"Short-form views", goal:10000, kind:"num", dp:0,
+     why:"Reach is the ceiling on Instagram and TikTok. Engagement is already healthy."}
+  ];
+  var TSTATE = {click:null, owned:null, views:null};
+
+  function renderTargets(){
+    var html = "";
+    TARGETS.forEach(function(t){
+      var cur = TSTATE[t.key];
+      var known = typeof cur === "number" && isFinite(cur);
+      var ratio = known && t.goal > 0 ? cur / t.goal : 0;
+      var st = !known ? "wait" : (ratio >= 1 ? "hit" : (ratio >= 0.6 ? "close" : "behind"));
+      var label = {wait:"reading", hit:"hit", close:"close", behind:"behind"}[st];
+      var pill = {wait:"off", hit:"on", close:"warn", behind:"crit"}[st];
+      var fmt = function(v){ return t.kind === "pct" ? pct(v, t.dp) : num(v); };
+      html += '<div class="tgt" data-st="' + st + '">' +
+        '<div class="tgt-head"><span class="tgt-name">' + esc(t.name) + "</span>" +
+        '<span class="pill ' + pill + '">' + esc(label) + "</span></div>" +
+        '<div class="tgt-nums"><span class="tgt-cur">' + (known ? esc(fmt(cur)) : "&mdash;") + "</span>" +
+        '<span class="tgt-goal">of ' + esc(fmt(t.goal)) + " target</span></div>" +
+        '<div class="meter"><span class="meter-fill" style="width:' +
+          Math.max(0, Math.min(100, Math.round(ratio * 100))) + '%"></span></div>' +
+        '<div class="tgt-why">' + esc(t.why) + "</div>" +
+        "</div>";
+    });
+    set("c-targets", html);
+  }
+
+  function renderDrafts(p, res){
+    if (!p || !p.edges) throw new Error("shape");
+    var rows = p.edges.map(function(e){ return e.node; }).filter(Boolean);
+    if (!rows.length){
+      set("c-drafts", '<div class="note-box"><strong>No drafts waiting</strong><div>' +
+        "Buffer has no ideas captured. The repurposing agent writes here after each issue " +
+        "publishes, so this fills up on its own.</div></div>" + staleTag(res));
+      return;
+    }
+    var html = '<ul class="items">';
+    rows.slice(0, 5).forEach(function(r){
+      var c = r.content || {};
+      var t = c.title || String(c.text || "").replace(/\s+/g, " ").slice(0, 70);
+      var svc = (c.services || []).join(", ");
+      html += '<li><span class="t">' + esc(t || "(untitled idea)") + "</span>" +
+        '<span class="m">' + esc(svc || "no channel") + "</span>" +
+        (c.date ? '<span class="d">for ' + esc(fmtDate(c.date)) + "</span>" : "") + "</li>";
+    });
+    html += "</ul>" + staleTag(res);
+    set("c-drafts", html);
+  }
+
   /* ---------- renderers ---------- */
   function renderNews(p, res){
     if (!p || typeof p !== "object") throw new Error("shape");
@@ -515,6 +633,8 @@
       "<div>Ad revenue against " + esc(num(subs)) + " active subscribers. Worth knowing before you price a sponsor slot.</div></div>";
     html += staleTag(res);
     set("c-news", html);
+    TSTATE.click = (typeof w.click_rate === "number") ? w.click_rate : null;
+    renderTargets();
     updateSignal(w, subs);
     var sub = $("ident-sub");
     if (sub) sub.innerHTML = "Motivated &amp; Miffed &middot; <b>" + esc(num(subs)) + "</b> active subscribers";
@@ -563,6 +683,8 @@
     if (!p.metrics.length){
       set("c-social", '<div class="note-box"><strong>No posts in this window</strong><div>' +
         "Buffer has no published posts in the last 30 days, so there is nothing to measure yet.</div></div>");
+      TSTATE.views = 0;
+      renderTargets();
       return;
     }
     var want = {postCount:"Posts", views:"Views", reactions:"Reactions", comments:"Comments", engagementRate:"Eng. rate"};
@@ -590,6 +712,8 @@
               esc(fmtDate(p.metricsUpdatedAt)) + "</div>";
     }
     set("c-social", html);
+    TSTATE.views = (by.views && typeof by.views.value === "number") ? by.views.value : null;
+    renderTargets();
   }
 
   function renderAcq(p, res){
@@ -620,6 +744,10 @@
     }
     html += staleTag(res);
     set("c-acq", html);
+    TSTATE.owned = list.reduce(function(a, x){
+      return a + (/recommendation/i.test(x.source || "") ? 0 : (x.count || 0));
+    }, 0);
+    renderTargets();
   }
 
   function renderQueue(p, res){
@@ -871,9 +999,10 @@
     set("signal-num", "&mdash;<small>offline</small>");
     set("stamp", "live data offline");
     set("ident-sub", "Motivated &amp; Miffed &middot; control room");
-    ["c-news","c-social","c-acq","c-queue","c-chan","c-issues","c-trend"].forEach(function(id){
+    ["c-news","c-social","c-acq","c-queue","c-drafts","c-chan","c-issues","c-trend"].forEach(function(id){
       set(id, '<div class="note-box"><strong>' + esc(e.title) + "</strong><div>" + esc(e.detail) + "</div></div>");
     });
+    renderTargets();
     renderDays();
   }
 
@@ -931,8 +1060,11 @@
         {organizationId:ids.org, status:["scheduled","draft","needs_approval"], first:6,
          sort:[{field:"dueAt", direction:"asc"}]},
         "c-queue", renderQueue);
+      watch(S_BUF, "list_ideas",
+        {organizationId:ids.org, first:5, includeUntagged:true},
+        "c-drafts", renderDrafts);
     }).catch(function(err){
-      ["c-chan","c-social","c-queue"].forEach(function(id){ set(id, errHtml(err, S_BUF)); });
+      ["c-chan","c-social","c-queue","c-drafts"].forEach(function(id){ set(id, errHtml(err, S_BUF)); });
     });
 
     // vidIQ bills credits per call, so this one reads once per open and never polls.
@@ -955,6 +1087,7 @@
     });
   });
 
+  renderTargets();
   renderDays();
   boot();
 })();
