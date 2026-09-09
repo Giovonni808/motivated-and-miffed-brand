@@ -52,3 +52,35 @@ writing the panel. A guessed response shape is the one thing that reliably break
 
 Drafting in voice, repurposing issues, carousel briefs and visual direction are handled here,
 which is why the build focused on the assembly layer rather than rebuilding those capabilities.
+
+## Observance calendar sources
+
+Dates in the control room's "Dates worth pegging to" panel, verified September 2026:
+
+- International Podcast Day, Sept 30 (fixed) — nationaldaycalendar.com, awarenessdays.com
+- National Techies Day, Oct 3 (fixed) — nationaldaycalendar.com
+- Get Organized Week, first full week of October (Oct 4-10, 2026) — checkiday.com
+- National Work Life Week, Oct 5-9, 2026 — workingfamilies.org.uk
+- World Mental Health Day, Oct 10 (fixed) — un.org, nationaldaycalendar.com
+- National Work and Family Month, October (month) — nationaldaycalendar.com
+- National Day of Unplugging, first Friday of March (Mar 5, 2027) — nationaltoday.com
+- World Creativity and Innovation Week, Apr 15-21, day Apr 21 (fixed, UN) — un.org
+- World Productivity Day, June 20 (fixed) — nationaldaycalendar.com
+- National Simplicity Day, July 12 (fixed) — holidayscalendar.com
+- Simplify Your Life Week, first full week of August (Aug 1-7, 2027) — nationaldaycalendar.com
+
+Fixed-date entries recur without maintenance. The week-long ones move each year and need
+a yearly refresh. The panel warns when every date on file has passed.
+
+## Notes for future panels
+
+- **beehiiv `list_posts` carries no public URL or slug.** Only `get_post` returns `url`,
+  `slug`, `subtitle` and `thumbnail_url`, so linking to a live issue costs one call per post.
+- **vidIQ bills credits per call** (5 for `vidiq_outliers`). Panels reading vidIQ must not
+  poll on an interval. The radar reads once per page open with a 5-minute cache.
+- **`vidiq_instagram_tiktok_outlier_search` returns prose, not JSON**, so its payload arrives
+  as a string. It is unsuitable for structured panels and well suited to agent-run briefs,
+  where the text is read rather than parsed. It is the best-matched research tool for this
+  brand: Instagram and TikTok are the live channels, and it reports hook, format, effort and
+  audience per outlier.
+- **Buffer free-plan insights cap at 31 days**, so any longer window fails with a plan error.

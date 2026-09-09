@@ -106,8 +106,15 @@
 
   /* ---------- panels ---------- */
   .grid{display:grid; gap:20px; grid-template-columns:1fr; align-items:start; grid-auto-flow:row dense}
-  @media(min-width:760px){ .grid{grid-template-columns:repeat(2,1fr)} .panel.span2{grid-column:span 2} }
-  @media(min-width:1120px){ .grid{grid-template-columns:repeat(3,1fr)} .panel.span2b{grid-column:span 2} }
+  @media(min-width:760px){
+    .grid{grid-template-columns:repeat(2,1fr)}
+    .panel.span2,.panel.span2b,.panel.spanFull{grid-column:span 2}
+  }
+  @media(min-width:1120px){
+    .grid{grid-template-columns:repeat(3,1fr)}
+    .panel.spanFull{grid-column:1/-1}
+    .panel.span2b{grid-column:span 2}
+  }
   .panel{
     background:var(--surface); border:1px solid var(--line); border-radius:12px;
     box-shadow:var(--panel-shadow); display:flex; flex-direction:column;
@@ -224,6 +231,52 @@
   }
   .foot b{color:var(--muted); font-weight:600}
   .scroll{overflow-x:auto}
+
+  /* ---------- data tables ---------- */
+  .tbl{width:100%; border-collapse:collapse; font-size:13px}
+  .tbl th{
+    font-family:var(--mono); font-size:9.5px; letter-spacing:.1em; text-transform:uppercase;
+    color:var(--dim); font-weight:500; text-align:left; padding:0 10px 8px 0;
+    border-bottom:1px solid var(--line); white-space:nowrap;
+  }
+  .tbl th.r,.tbl td.r{text-align:right; padding-left:18px; padding-right:0}
+  .tbl td{
+    padding:10px 10px 10px 0; border-bottom:1px solid var(--line-soft); vertical-align:top;
+    font-variant-numeric:tabular-nums; white-space:nowrap;
+  }
+  .tbl tr:last-child td{border-bottom:0}
+  .tbl td:first-child{white-space:normal; min-width:190px; padding-right:16px}
+  .tbl .ti{font-weight:500; line-height:1.35; display:block}
+  .tbl .ti a{color:inherit; text-decoration:none; border-bottom:1px solid transparent}
+  .tbl .ti a:hover{border-bottom-color:var(--accent)}
+  .tbl .sub{
+    display:block; font-size:11.5px; color:var(--dim); line-height:1.4; margin-top:3px;
+    white-space:normal;
+  }
+  .tbl td.bad{color:var(--crit); font-weight:600}
+  .tbl td.big{font-weight:600}
+  .tbl .wait{color:var(--dim)}
+  .tbl .flag{
+    font-family:var(--mono); font-size:9px; letter-spacing:.06em; text-transform:uppercase;
+    color:var(--warn); display:block; margin-top:3px; white-space:normal;
+  }
+
+  /* ---------- observances ---------- */
+  .obs{display:flex; flex-direction:column; gap:0; margin:0; padding:0; list-style:none}
+  .obs li{
+    padding:12px 0; border-bottom:1px solid var(--line-soft);
+    display:grid; grid-template-columns:62px 1fr; gap:3px 14px; align-items:baseline;
+  }
+  .obs li:first-child{padding-top:0}
+  .obs li:last-child{border-bottom:0; padding-bottom:0}
+  .obs .when{
+    font-family:var(--mono); font-size:10px; letter-spacing:.05em; text-transform:uppercase;
+    color:var(--dim); line-height:1.4; text-align:right;
+  }
+  .obs li[data-soon="yes"] .when{color:var(--accent-ink); font-weight:600}
+  .obs .nm{font-size:13.5px; font-weight:600; line-height:1.35}
+  .obs .angle{grid-column:2; font-size:12.5px; color:var(--muted); line-height:1.45}
+  .obs .date{grid-column:2; font-family:var(--mono); font-size:10.5px; color:var(--dim)}
 </style>
 
 <div class="wrap">
@@ -286,7 +339,7 @@
       </div>
     </section>
 
-    <section class="panel span2" id="p-chan">
+    <section class="panel spanFull" id="p-chan">
       <header>
         <h3>Channel coverage</h3>
         <span class="src">buffer</span>
@@ -306,12 +359,22 @@
       </div>
     </section>
 
-    <section class="panel" id="p-issues">
+    <section class="panel span2b" id="p-issues">
       <header>
         <h3>Recent issues</h3>
         <span class="src">beehiiv</span>
       </header>
       <div class="content" id="c-issues">
+        <div class="skel"><i></i><i></i><i></i></div>
+      </div>
+    </section>
+
+    <section class="panel" id="p-days">
+      <header>
+        <h3>Dates worth pegging to</h3>
+        <span class="src">editorial calendar</span>
+      </header>
+      <div class="content" id="c-days">
         <div class="skel"><i></i><i></i><i></i></div>
       </div>
     </section>
@@ -330,7 +393,8 @@
 
   <div class="foot">
     <div><b>How this page works.</b> Every number is read live from your own beehiiv, Buffer and vidIQ accounts using your credentials when you open the page. Nothing is stored here and nothing is cached between viewers.</div>
-    <div><b>Reading the radar.</b> Topic radar shows YouTube Shorts velocity across all channels, so use it for what subjects are moving, never as a benchmark against your own reach.</div>
+    <div><b>Reading the radar.</b> Topic radar shows YouTube Shorts that beat their own channel's average, so use it for which subjects and framings are moving, never as a benchmark against your reach. It reads once per open because vidIQ bills credits per call.</div>
+    <div><b>The dates panel</b> is a fixed editorial calendar, verified when it was built. Fixed-date observances recur, the week-long ones shift each year, so ask for a refresh annually.</div>
   </div>
 </div>
 
@@ -424,7 +488,9 @@
         setTimeout(function(){ mcp.invalidate(server, tool, input).catch(function(){}); },
                    (ev.error.retryAfterMs || 2500) + Math.random() * 800);
       }
-    }, {cache:{staleTime:120000}, refetchInterval:interval || 300000});
+    }, interval === 0
+         ? {cache:{staleTime:300000}}
+         : {cache:{staleTime:120000}, refetchInterval:interval || 300000});
     unsubs.push(un);
   }
 
@@ -617,6 +683,7 @@
     set("c-chan", html);
   }
 
+  var ISSUE_ROWS = 5;
   function renderIssues(p, res){
     if (!p || !Array.isArray(p.posts)) throw new Error("shape");
     if (!p.posts.length){
@@ -624,54 +691,179 @@
         "beehiiv has nothing published for this publication yet.</div></div>");
       return;
     }
+    var posts = p.posts.slice(0, ISSUE_ROWS);
     var html = "";
     if (p.pagination && typeof p.pagination.total === "number"){
       html += '<div class="metrics m1">' + metric("Issues published", num(p.pagination.total)) + "</div>";
     }
-    html += '<ul class="items">';
-    p.posts.slice(0, 5).forEach(function(po){
-      var link = po.editor_url
-        ? '<a href="' + esc(po.editor_url) + '" target="_blank" rel="noopener noreferrer">' + esc(po.title || "(untitled)") + "</a>"
-        : esc(po.title || "(untitled)");
-      var tags = (po.content_tags || []).map(function(t){ return t.display; }).filter(Boolean).join(" · ");
-      html += '<li><span class="t">' + link + '</span><span class="m">' +
-        esc(po.scheduled_at ? fmtDate(po.scheduled_at) : "") + "</span>" +
-        (tags ? '<span class="d">' + esc(tags) + "</span>" : "") + "</li>";
+    html += '<div class="scroll"><table class="tbl"><thead><tr><th>Issue</th>' +
+      '<th class="r">Sent</th><th class="r">Delivered</th><th class="r">Open</th><th class="r">Click</th>' +
+      "</tr></thead><tbody>";
+    posts.forEach(function(po, i){
+      html += "<tr><td><span class=\"ti\" id=\"iss-t-" + i + '">' + esc(po.title || "(untitled)") +
+        '</span><span class="sub" id="iss-s-' + i + '"></span></td>' +
+        '<td class="r">' + esc(po.scheduled_at ? fmtDate(po.scheduled_at) : "—") + "</td>" +
+        '<td class="r wait" id="iss-d-' + i + '">·</td>' +
+        '<td class="r wait" id="iss-o-' + i + '">·</td>' +
+        '<td class="r wait" id="iss-c-' + i + '">·</td></tr>';
     });
-    html += "</ul>" + staleTag(res);
+    html += "</tbody></table></div>";
+    html += '<div class="note-box"><strong>Titles link to the public issue</strong><div>' +
+      "Open and click rates are per issue, so the gap between the two columns is where readers stop. " +
+      "A click rate under 1% against a healthy open rate means the links are the problem.</div></div>";
+    html += staleTag(res);
     set("c-issues", html);
+    posts.forEach(function(po, i){ enrichIssue(po, i); });
+  }
+
+  // Public URL and per-issue stats need one call each; list_posts carries neither.
+  function enrichIssue(po, i){
+    if (!po || !po.id) return;
+    var opts = {cache:{staleTime:300000}};
+
+    mcp.callTool(S_BEE, "get_post", {post_id:po.id}, opts).then(function(r){
+      var d = r.payload;
+      if (!d || typeof d !== "object") return;
+      if (d.url){
+        var t = $("iss-t-" + i);
+        if (t) t.innerHTML = '<a href="' + esc(d.url) + '" target="_blank" rel="noopener noreferrer">' +
+          esc(d.title || po.title || "(untitled)") + "</a>";
+      }
+      if (d.subtitle){
+        var sb = $("iss-s-" + i);
+        if (sb) sb.textContent = d.subtitle;
+      }
+    }).catch(function(){ /* the plain title already renders; leave it */ });
+
+    mcp.callTool(S_BEE, "get_post_stats", {post_id:po.id}, opts).then(function(r){
+      var d = r.payload, e = d && d.email;
+      var dc = $("iss-d-" + i), oc = $("iss-o-" + i), cc = $("iss-c-" + i);
+      if (!e){
+        [dc, oc, cc].forEach(function(el){ if (el){ el.textContent = "—"; el.className = "r wait"; } });
+        return;
+      }
+      if (dc){ dc.textContent = num(e.total_delivered); dc.className = "r"; }
+      if (oc){ oc.textContent = pct(e.open_rate, 1); oc.className = "r big"; }
+      if (cc){
+        cc.textContent = pct(e.click_rate, 2);
+        cc.className = (typeof e.click_rate === "number" && e.click_rate < 1) ? "r bad" : "r big";
+      }
+    }).catch(function(){
+      ["iss-d-", "iss-o-", "iss-c-"].forEach(function(pre){
+        var el = $(pre + i);
+        if (el){ el.textContent = "—"; el.className = "r wait"; }
+      });
+    });
   }
 
   function renderTrend(p, res){
     if (!p || !Array.isArray(p.videos)) throw new Error("shape");
     if (!p.videos.length){
-      set("c-trend", '<div class="note-box"><strong>Nothing moving right now</strong><div>' +
-        "vidIQ found no Shorts gaining velocity on this topic. Narrower topics go quiet for days at a time; " +
-        "check back rather than reading it as a dead subject.</div></div>");
+      set("c-trend", '<div class="note-box"><strong>No outliers on this topic</strong><div>' +
+        "vidIQ found no videos beating their channel average for this keyword and window. " +
+        "Narrow topics go quiet for days, so read it as no signal rather than a dead subject.</div></div>");
       return;
     }
-    var html = '<ul class="items">';
-    p.videos.slice(0, 4).forEach(function(v){
-      var t = String(v.videoTitle || "").replace(/\s*#\S+/g, "").replace(/\s+/g, " ").trim();
-      if (t.length > 74) t = t.slice(0, 74) + "…";
-      var vph = typeof v.vph === "number" ? Math.round(v.vph) : null;
-      html += '<li><span class="t">' +
+    var html = '<div class="scroll"><table class="tbl"><thead><tr><th>Video</th>' +
+      '<th class="r">Breakout</th><th class="r">Views</th><th class="r">Views/hr</th>' +
+      '<th class="r">Eng.</th><th class="r">Subs</th><th class="r">Len</th>' +
+      "</tr></thead><tbody>";
+    var trap = 0;
+    p.videos.slice(0, 6).forEach(function(v){
+      var t = String(v.videoTitle || "").replace(/\s+/g, " ").trim();
+      if (t.length > 66) t = t.slice(0, 66) + "…";
+      var bs = typeof v.breakoutScore === "number" ? v.breakoutScore : null;
+      var vph = typeof v.vph === "number" ? v.vph : null;
+      var stale = bs != null && vph != null && bs > 50 && vph < 10;
+      if (stale) trap++;
+      var meta = [v.channelTitle, v.mainCategory].filter(Boolean).join(" · ");
+      html += "<tr><td><span class=\"ti\">" +
         (v.videoId ? '<a href="https://www.youtube.com/watch?v=' + esc(v.videoId) +
                      '" target="_blank" rel="noopener noreferrer">' + esc(t) + "</a>" : esc(t)) +
-        '</span><span class="m">' + (vph != null ? esc(num(vph)) + "/hr" : "—") + "</span>" +
-        '<span class="d">' + esc(v.channelTitle || "") +
-        (typeof v.subscriberCount === "number" ? " · " + esc(num(v.subscriberCount)) + " subs" : "") +
-        "</span></li>";
+        '</span><span class="sub">' + esc(meta) +
+        (stale ? '<span class="flag">high breakout, low velocity: it overperformed a while ago</span>' : "") +
+        "</span></td>" +
+        '<td class="r big">' + (bs != null ? esc(bs.toFixed(1)) + "x" : "—") + "</td>" +
+        '<td class="r">' + esc(num(v.viewCount)) + "</td>" +
+        '<td class="r">' + (vph != null ? esc(num(Math.round(vph))) : "—") + "</td>" +
+        '<td class="r">' + (typeof v.engagementRate === "number"
+                            ? esc((v.engagementRate * 100).toFixed(1)) + "%" : "—") + "</td>" +
+        '<td class="r">' + esc(num(v.subscriberCount)) + "</td>" +
+        '<td class="r">' + (typeof v.videoDuration === "number" ? esc(String(v.videoDuration)) + "s" : "—") +
+        "</td></tr>";
     });
-    html += "</ul>" + staleTag(res);
+    html += "</tbody></table></div>";
+    html += '<div class="note-box"><strong>Breakout is relative, views are absolute</strong><div>' +
+      "Breakout compares a video to its own channel's average, so a small channel can post a 200x " +
+      "breakout on modest views. Read the two columns together." +
+      (trap ? " " + (trap === 1 ? "One row is" : trap + " rows are") +
+              " flagged: strong breakout with almost no current velocity." : "") +
+      "</div></div>";
+    html += '<div class="stale">one vidIQ call per open · costs credits, so this panel does not auto-poll</div>';
     set("c-trend", html);
   }
 
-  /* ---------- boot ---------- */
-  function allPanels(html){
-    ["c-news","c-social","c-acq","c-queue","c-chan","c-issues","c-trend"].forEach(function(id){ set(id, html); });
+  /* ---------- observance calendar ----------
+     Dates verified against published observance calendars in Sept 2026.
+     Fixed-date entries recur; the week-long ones move, so refresh yearly. */
+  var OBSERVANCES = [
+    {start:"2026-09-30", end:null,         name:"International Podcast Day",
+     angle:"Podcast workflow as a productivity story: how creators batch, script and repurpose one recording."},
+    {start:"2026-10-03", end:null,         name:"National Techies Day",
+     angle:"The unglamorous tooling that actually holds a week together, against the app that got the launch video."},
+    {start:"2026-10-04", end:"2026-10-10", name:"Get Organized Week",
+     angle:"Organizing systems collapse for predictable reasons. Run a teardown of why the last one was abandoned."},
+    {start:"2026-10-05", end:"2026-10-09", name:"National Work Life Week",
+     angle:"Treat work-life balance as a scheduling problem with real constraints."},
+    {start:"2026-10-10", end:null,         name:"World Mental Health Day",
+     angle:"The productivity industry's quiet contribution to burnout. Handle carefully and drop the hustle framing."},
+    {start:"2026-10-01", end:"2026-10-31", name:"National Work and Family Month",
+     angle:"Month-long peg for protecting focus time around the people who need you."},
+    {start:"2027-03-05", end:null,         name:"National Day of Unplugging",
+     angle:"A digital detox piece that admits detoxes rarely stick, then covers what holds instead."},
+    {start:"2027-04-15", end:"2027-04-21", name:"World Creativity and Innovation Week",
+     angle:"Creativity treated as a repeatable input you can schedule."},
+    {start:"2027-06-20", end:null,         name:"World Productivity Day",
+     angle:"The obvious anchor for this brand. Plan the flagship issue backward from this date."},
+    {start:"2027-07-12", end:null,         name:"National Simplicity Day",
+     angle:"Subtraction as a method: what to remove from the stack and what breaks when you do."},
+    {start:"2027-08-01", end:"2027-08-07", name:"Simplify Your Life Week",
+     angle:"A week-long series that cuts one thing per day."}
+  ];
+
+  function renderDays(){
+    var today = new Date(); today.setHours(0, 0, 0, 0);
+    var rows = OBSERVANCES.map(function(ob){
+      var d = new Date(ob.start + "T00:00:00");
+      return {ob:ob, d:d, days:Math.round((d - today) / 86400000)};
+    }).filter(function(r){
+      var endsAt = r.ob.end ? new Date(r.ob.end + "T00:00:00") : r.d;
+      return endsAt >= today;
+    }).sort(function(a, b){ return a.d - b.d; }).slice(0, 6);
+
+    if (!rows.length){
+      set("c-days", '<div class="note-box warn"><strong>The calendar needs a refresh</strong><div>' +
+        "Every date on file has passed. Ask for a new pull and these dates get rebuilt.</div></div>");
+      return;
+    }
+    var html = '<ul class="obs">';
+    rows.forEach(function(r){
+      var soon = r.days <= 30 ? "yes" : "no";
+      var when = r.days < 0 ? "on now" : (r.days === 0 ? "today" : r.days + (r.days === 1 ? " day" : " days"));
+      var opts = {month:"short", day:"numeric"};
+      var span = r.d.toLocaleDateString("en-US", opts) +
+        (r.ob.end ? " to " + new Date(r.ob.end + "T00:00:00").toLocaleDateString("en-US", opts) : "") +
+        ", " + r.d.getFullYear();
+      html += '<li data-soon="' + soon + '"><span class="when">' + esc(when) + "</span>" +
+        '<span class="nm">' + esc(r.ob.name) + "</span>" +
+        '<span class="date">' + esc(span) + "</span>" +
+        '<span class="angle">' + esc(r.ob.angle) + "</span></li>";
+    });
+    html += "</ul>";
+    set("c-days", html);
   }
 
+  /* ---------- boot ---------- */
   function noLive(err){
     var e = errCopy(err || {code:"capability_disabled"}, "your connectors");
     set("signal-title", esc(e.title));
@@ -679,7 +871,10 @@
     set("signal-num", "&mdash;<small>offline</small>");
     set("stamp", "live data offline");
     set("ident-sub", "Motivated &amp; Miffed &middot; control room");
-    allPanels('<div class="note-box"><strong>' + esc(e.title) + "</strong><div>" + esc(e.detail) + "</div></div>");
+    ["c-news","c-social","c-acq","c-queue","c-chan","c-issues","c-trend"].forEach(function(id){
+      set(id, '<div class="note-box"><strong>' + esc(e.title) + "</strong><div>" + esc(e.detail) + "</div></div>");
+    });
+    renderDays();
   }
 
   function dayRange(days){
@@ -740,10 +935,11 @@
       ["c-chan","c-social","c-queue"].forEach(function(id){ set(id, errHtml(err, S_BUF)); });
     });
 
-    // vidIQ needs no account lookup.
-    watch(S_VID, "vidiq_trending_videos",
-      {videoFormat:"short", titleQuery:"productivity", limit:4, sortBy:"vph"},
-      "c-trend", renderTrend, 900000);
+    // vidIQ bills credits per call, so this one reads once per open and never polls.
+    watch(S_VID, "vidiq_outliers",
+      {keyword:"AI productivity systems", contentType:"short", limit:6,
+       publishedWithin:"thisMonth", sort:"breakoutScore"},
+      "c-trend", renderTrend, 0);
 
     set("stamp", "live · refreshes every 5 min");
   }
@@ -759,6 +955,7 @@
     });
   });
 
+  renderDays();
   boot();
 })();
 </script>
