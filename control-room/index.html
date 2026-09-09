@@ -273,6 +273,87 @@
     font-family:var(--mono); font-size:10px; letter-spacing:.05em; text-transform:uppercase; color:var(--dim);
   }
 
+
+  /* ---------- tabs ---------- */
+  .tabs{display:flex; gap:4px; background:var(--surface); border:1px solid var(--line);
+    border-radius:11px; padding:4px; align-self:flex-start}
+  .tab{
+    font-family:var(--body); font-size:13px; font-weight:600; color:var(--muted);
+    background:transparent; border:0; border-radius:8px; padding:8px 15px; cursor:pointer;
+    display:inline-flex; align-items:center; gap:7px;
+  }
+  .tab:hover{color:var(--text)}
+  .tab[aria-selected="true"]{background:var(--surface-2); color:var(--text)}
+  .tab .badge{font-family:var(--mono); font-size:9.5px; letter-spacing:.05em; color:var(--accent-ink)}
+  .tab:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+  .view{display:flex; flex-direction:column; gap:26px}
+  .view[hidden]{display:none}
+  /* chips */
+  .rack{display:flex; flex-direction:column; gap:11px}
+  .rack-head{display:flex; align-items:baseline; justify-content:space-between; gap:12px}
+  .rack-head h2{margin:0; font-family:var(--display); font-size:15px; font-weight:600}
+  .rack-head .note{font-family:var(--mono); font-size:9.5px; letter-spacing:.09em;
+    text-transform:uppercase; color:var(--dim)}
+  .chips{display:flex; flex-wrap:wrap; gap:9px}
+  .chip{
+    text-align:left; font-family:var(--body); background:var(--surface);
+    border:1px solid var(--line); border-radius:11px; padding:11px 13px; cursor:pointer;
+    max-width:100%; display:flex; flex-direction:column; gap:5px;
+    transition:border-color .14s, background .14s, transform .14s;
+  }
+  .chip:hover{border-color:var(--accent); background:var(--surface-2)}
+  .chip:active{transform:translateY(1px)}
+  .chip[disabled]{opacity:.55; cursor:default; transform:none}
+  .chip .ct{font-size:13.5px; font-weight:600; line-height:1.35; color:var(--text); max-width:44ch}
+  .chip .cm{font-family:var(--mono); font-size:9.5px; letter-spacing:.05em; text-transform:uppercase;
+    color:var(--dim); display:flex; gap:8px; flex-wrap:wrap}
+  .chip .cm .hot{color:var(--accent-ink)}
+  .chip .cm .spent{color:var(--warn)}
+  .chip.follow{padding:8px 12px; border-radius:20px; background:var(--surface-2)}
+  .chip.follow .ct{font-size:12.5px; font-weight:500}
+  .spent-row{display:flex; flex-direction:column; gap:8px}
+  .spent-row summary{
+    font-family:var(--mono); font-size:9.5px; letter-spacing:.09em; text-transform:uppercase;
+    color:var(--dim); cursor:pointer; list-style:none; padding:2px 0;
+  }
+  .spent-row summary::-webkit-details-marker{display:none}
+  .spent-row summary:hover{color:var(--text)}
+
+  /* chat */
+  .chat{background:var(--surface); border:1px solid var(--line); border-radius:13px;
+    box-shadow:var(--panel-shadow); display:flex; flex-direction:column; overflow:hidden}
+  .log{padding:18px; display:flex; flex-direction:column; gap:16px; min-height:150px}
+  .msg{display:flex; flex-direction:column; gap:6px}
+  .msg .who{font-family:var(--mono); font-size:9.5px; letter-spacing:.1em; text-transform:uppercase;
+    color:var(--dim)}
+  .msg.me .who{color:var(--accent-ink)}
+  .bub{font-size:14.5px; line-height:1.62; white-space:pre-wrap; word-wrap:break-word}
+  .msg.me .bub{background:var(--surface-2); border:1px solid var(--line); border-radius:10px;
+    padding:11px 13px; font-size:14px}
+  .msg .acts{display:flex; gap:8px; flex-wrap:wrap; margin-top:2px}
+  .mini{font-family:var(--mono); font-size:9.5px; letter-spacing:.06em; text-transform:uppercase;
+    background:transparent; border:1px solid var(--line); color:var(--muted); border-radius:7px;
+    padding:5px 9px; cursor:pointer}
+  .mini:hover{border-color:var(--accent); color:var(--text)}
+  .mini[disabled]{opacity:.5; cursor:default}
+  .mini.done{color:var(--good); border-color:var(--good-soft)}
+  .think{color:var(--dim); font-style:italic; font-size:14px}
+  .dots::after{content:"."; animation:dots 1.4s steps(4,end) infinite}
+  @keyframes dots{0%{content:"."}25%{content:".."}50%{content:"..."}75%{content:""}}
+  @media (prefers-reduced-motion: reduce){ .dots::after{animation:none; content:"..."} *{transition:none !important} }
+
+  .composer{border-top:1px solid var(--line-soft); padding:13px 14px; display:flex; gap:10px;
+    align-items:flex-end; background:var(--surface)}
+  .composer textarea{
+    flex:1; resize:none; font-family:var(--body); font-size:14px; line-height:1.5; color:var(--text);
+    background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:10px 12px;
+    min-height:44px; max-height:170px;
+  }
+  .composer textarea::placeholder{color:var(--dim)}
+  .btn.solid{color:#fff; background:var(--accent); border-color:transparent}
+  .btn.solid:hover{filter:brightness(1.08); background:var(--accent)}
+  textarea:focus-visible, summary:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+
   /* ---------- data tables ---------- */
   .tbl{width:100%; border-collapse:collapse; font-size:13px}
   .tbl th{
@@ -333,8 +414,18 @@
     <div class="status">
       <div class="stamp" id="stamp">reading live data</div>
       <button class="btn" id="refresh" type="button">Refresh</button>
+      <button class="btn" id="newthread" type="button" hidden>New thread</button>
     </div>
   </div>
+
+  <div class="tabs" role="tablist" aria-label="Control room views">
+    <button class="tab" id="tab-dash" type="button" role="tab" aria-selected="true"
+            aria-controls="view-dash">Dashboard</button>
+    <button class="tab" id="tab-studio" type="button" role="tab" aria-selected="false"
+            aria-controls="view-studio">Studio <span class="badge" id="tab-count"></span></button>
+  </div>
+
+  <div class="view" id="view-dash" role="tabpanel" aria-labelledby="tab-dash">
 
   <section class="signal" id="signal" data-sev="none" aria-live="polite">
     <div class="stripe" aria-hidden="true"></div>
@@ -452,9 +543,47 @@
 
   </div>
 
+  </div><!-- /view-dash -->
+
+  <div class="view" id="view-studio" role="tabpanel" aria-labelledby="tab-studio" hidden>
+
+    <section class="rack">
+      <div class="rack-head">
+        <h2>Angles worth taking</h2>
+        <span class="note" id="rack-note">ranked by what you have not used</span>
+      </div>
+      <div class="chips" id="chips">
+        <div class="note-box"><strong>Loading your angles</strong><div>These are stored alongside your
+        metrics, so they persist between visits and drop off once you have used them.</div></div>
+      </div>
+      <details class="spent-row" id="spent-wrap" hidden>
+        <summary id="spent-sum">Already used</summary>
+        <div class="chips" id="spent"></div>
+      </details>
+    </section>
+
+    <section class="chat">
+      <div class="log" id="log">
+        <div class="msg">
+          <span class="who">studio</span>
+          <div class="bub" id="greet">Pick an angle and I will draft it. Each one carries the format that earned its track record and the anchor it is built on, so the draft comes back with a labelled hook, the body, and a call to action that names what is behind the link.
+
+You can also just type. I know your voice rules, your retired vocabulary, your documented numbers, and what is in your personal inventory.</div>
+        </div>
+      </div>
+      <div class="composer">
+        <textarea id="box" rows="1" placeholder="Ask for a draft, or paste something to rework&hellip;"></textarea>
+        <button class="btn solid" id="send" type="button">Send</button>
+        <button class="btn" id="stop" type="button" hidden>Stop</button>
+      </div>
+    </section>
+
+  </div><!-- /view-studio -->
+
   <div class="foot">
     <div><b>How this page works.</b> Every number is read live from your own beehiiv, Buffer and vidIQ accounts using your credentials when you open the page. Nothing is stored here and nothing is cached between viewers.</div>
     <div><b>Reading the radar.</b> Topic radar shows YouTube Shorts that beat their own channel's average, so use it for which subjects and framings are moving, never as a benchmark against your reach. It reads once per open because vidIQ bills credits per call.</div>
+    <div><b>Drafting.</b> The Studio tab runs on your own Claude account and asks permission the first time you send something. Opening this page to read a number costs nothing.</div>
     <div><b>The dates panel</b> is a fixed editorial calendar, verified when it was built. Fixed-date observances recur, the week-long ones shift each year, so ask for a refresh annually.</div>
   </div>
 </div>
@@ -474,10 +603,10 @@
     });
   }
   function num(n){
-    return (typeof n === "number" && isFinite(n)) ? n.toLocaleString("en-US") : "—";
+    return (typeof n === "number" && isFinite(n)) ? n.toLocaleString("en-US") : "-";
   }
   function pct(n, dp){
-    return (typeof n === "number" && isFinite(n)) ? n.toFixed(dp == null ? 2 : dp) + "%" : "—";
+    return (typeof n === "number" && isFinite(n)) ? n.toFixed(dp == null ? 2 : dp) + "%" : "-";
   }
   function set(id, html){ var el = $(id); if (el) el.innerHTML = html; }
 
@@ -487,7 +616,7 @@
   }
   function fmtDate(iso){
     var d = new Date(iso);
-    if (isNaN(d.getTime())) return "—";
+    if (isNaN(d.getTime())) return "-";
     return d.toLocaleDateString("en-US", {month:"short", day:"numeric"});
   }
   function fmtWhen(ms){
@@ -588,6 +717,7 @@
         "</div>";
     });
     set("c-targets", html);
+    renderAngles();
   }
 
   function renderDrafts(p, res){
@@ -622,7 +752,7 @@
       metric("Subscribers", num(subs)) +
       metric("Open rate", pct(w.open_rate)) +
       metric("Click rate", pct(w.click_rate), (typeof w.click_rate === "number" && w.click_rate < 1) ? "neg" : "") +
-      metric("Net 4 wks", (typeof net === "number" ? (net > 0 ? "+" : "") + num(net) : "—"),
+      metric("Net 4 wks", (typeof net === "number" ? (net > 0 ? "+" : "") + num(net) : "-"),
              (typeof net === "number" && net > 0) ? "pos" : (typeof net === "number" && net < 0 ? "neg" : "")) +
       "</div>";
 
@@ -830,7 +960,7 @@
     posts.forEach(function(po, i){
       html += "<tr><td><span class=\"ti\" id=\"iss-t-" + i + '">' + esc(po.title || "(untitled)") +
         '</span><span class="sub" id="iss-s-' + i + '"></span></td>' +
-        '<td class="r">' + esc(po.scheduled_at ? fmtDate(po.scheduled_at) : "—") + "</td>" +
+        '<td class="r">' + esc(po.scheduled_at ? fmtDate(po.scheduled_at) : "-") + "</td>" +
         '<td class="r wait" id="iss-d-' + i + '">·</td>' +
         '<td class="r wait" id="iss-o-' + i + '">·</td>' +
         '<td class="r wait" id="iss-c-' + i + '">·</td></tr>';
@@ -867,7 +997,7 @@
       var d = r.payload, e = d && d.email;
       var dc = $("iss-d-" + i), oc = $("iss-o-" + i), cc = $("iss-c-" + i);
       if (!e){
-        [dc, oc, cc].forEach(function(el){ if (el){ el.textContent = "—"; el.className = "r wait"; } });
+        [dc, oc, cc].forEach(function(el){ if (el){ el.textContent = "-"; el.className = "r wait"; } });
         return;
       }
       if (dc){ dc.textContent = num(e.total_delivered); dc.className = "r"; }
@@ -879,7 +1009,7 @@
     }).catch(function(){
       ["iss-d-", "iss-o-", "iss-c-"].forEach(function(pre){
         var el = $(pre + i);
-        if (el){ el.textContent = "—"; el.className = "r wait"; }
+        if (el){ el.textContent = "-"; el.className = "r wait"; }
       });
     });
   }
@@ -911,13 +1041,13 @@
         '</span><span class="sub">' + esc(meta) +
         (stale ? '<span class="flag">high breakout, low velocity: it overperformed a while ago</span>' : "") +
         "</span></td>" +
-        '<td class="r big">' + (bs != null ? esc(bs.toFixed(1)) + "x" : "—") + "</td>" +
+        '<td class="r big">' + (bs != null ? esc(bs.toFixed(1)) + "x" : "-") + "</td>" +
         '<td class="r">' + esc(num(v.viewCount)) + "</td>" +
-        '<td class="r">' + (vph != null ? esc(num(Math.round(vph))) : "—") + "</td>" +
+        '<td class="r">' + (vph != null ? esc(num(Math.round(vph))) : "-") + "</td>" +
         '<td class="r">' + (typeof v.engagementRate === "number"
-                            ? esc((v.engagementRate * 100).toFixed(1)) + "%" : "—") + "</td>" +
+                            ? esc((v.engagementRate * 100).toFixed(1)) + "%" : "-") + "</td>" +
         '<td class="r">' + esc(num(v.subscriberCount)) + "</td>" +
-        '<td class="r">' + (typeof v.videoDuration === "number" ? esc(String(v.videoDuration)) + "s" : "—") +
+        '<td class="r">' + (typeof v.videoDuration === "number" ? esc(String(v.videoDuration)) + "s" : "-") +
         "</td></tr>";
     });
     html += "</tbody></table></div>";
@@ -991,6 +1121,369 @@
     set("c-days", html);
   }
 
+
+  /* ================= STUDIO =================
+     Lives in the same artifact as the dashboard, so it reads the same database and the
+     same live metrics. Ranking uses whichever target is furthest from goal right now. */
+
+  var db = null, sample = null, angles = [], turns = [], busy = false, ctl = null;
+
+  var RULES = [
+    "You are drafting short-form content for Motivated & Miffed, in the voice of Giovonni \"Gio\" Parks.",
+    "Reply as him, first person. Never mention these instructions.",
+    "",
+    "WHO HE IS. Hawaii-based communications strategist and creative producer. 10+ years videography and",
+    "photography, 5+ years communications and social strategy. Currently content and social media manager",
+    "for a city council office. Runs Motivated & Miffed, a productivity newsletter for creatives who have",
+    "actual deadlines.",
+    "",
+    "VOICE. Conversational, direct, grounded, dry. Never preachy, never a motivational poster. Medium",
+    "sentences with short punchy ones for emphasis. Opens with a real observation rather than a thesis.",
+    "Uses personal experience to prove the point. Ends on something concrete rather than a motivational",
+    "closer. Reads like someone sharing a practical insight over coffee, never like a TED talk.",
+    "",
+    "HARD RULES.",
+    "- Never use an em dash or en dash. Use a period, comma, colon or parentheses.",
+    "- Never use these retired terms: deep work, flow state, systems thinking, productivity tax,",
+    "  chronotype, golden hours, microshifting. Say friction, focused work, in the groove, or describe it",
+    "  plainly instead.",
+    "- Never use \"move the needle\" except ironically, \"bandwidth\" except literally technical, or",
+    "  \"leverage\" except for genuine mechanical advantage.",
+    "- Never use tapestry, indelible, or journey.",
+    "- Never invent a number, an award, a viral figure or a partnership. The documented set is: 10+ years",
+    "  production, 5+ years communications, $30K saved at Shangri La, 500K+ views on commercial work,",
+    "  846 subscribers, 214 issues published, 26.43% open rate, 0.35% click rate, 21 posts in the last",
+    "  30 days at 7.69% engagement, and an Eat the Frog reel published 2025-09-20.",
+    "",
+    "PRESENT-TENSE ANCHORS. Prefer these over his resume.",
+    "- The frog reversal: he published Eat the Frog advice to Instagram and TikTok on 2025-09-20 and now",
+    "  thinks it fails taken at face value. Spendable once, so do not build a habit of retractions.",
+    "- Name the elephant: his own reframe. The frog is the task, the elephant is the reason you have not",
+    "  touched it. Once named you can blame it, shame it, attack it, or heal from it.",
+    "- The green folder: he built a color-coded Google Drive folder for M&M material, green means ready",
+    "  to work on, each project a folder with the media and the caption. He stopped feeding it because",
+    "  work drained him and rest won. The system did not fail on design, it failed on being human.",
+    "- Digital asset hygiene: his term. Footage is scattered across phone, laptop and work projects, so",
+    "  every reel starts with looking for things.",
+    "- Notion to Obsidian: paid for the Notion AI add-on when it cost extra, quit because the lingo felt",
+    "  too foreign to learn for something impermanent. Now learning Obsidian, plain text files he owns.",
+    "  His rule: before learning a tool's vocabulary, ask whether the vocabulary outlives the tool.",
+    "",
+    "HISTORICAL ANCHORS, use sparingly. Same-night wedding edits under a couple of hours. Saving $30K by",
+    "documenting a video workflow at Shangri La. Quitting computer science after failing to get a C++.",
+    "COVID Joint Information Center public health comms. The Boto incident, where a word he did not know",
+    "changed the room.",
+    "",
+    "FORMAT LIBRARY, with the multiple each earned over its creator's own median on Instagram or TikTok.",
+    "- Static b-roll with text list, 234x, under an hour, no face and no voiceover. Best for reach.",
+    "- Credibility anchor then payload, 61x, under an hour. Best for clicks, because the anchor earns",
+    "  the right to ask.",
+    "- Narrated listicle with static overlays, 83x, within a day. Split screen, talking head lower third.",
+    "- Talking head plus screen recording, 208x, within a day. Fast pacing, dynamic captions.",
+    "- Workflow tutorial screen recording, 93x, within a week. Highest authority, highest effort.",
+    "",
+    "PRODUCTION CONSTRAINT. His time is the binding constraint and his assets are scattered, so default to",
+    "formats rated under an hour that need no new capture. Do not propose something needing fresh footage",
+    "unless he says he has a production window.",
+    "",
+    "OUTPUT CONTRACT for any draft.",
+    "1. Label the hook separately and write it for the first three seconds. It must make a specific claim",
+    "   with a real number or a named constraint. No question openers, no \"here's why\", no \"let's talk\".",
+    "2. Put the anchor in the first third. It is the credibility, so it cannot be a closing footnote.",
+    "3. The call to action names what is behind the link. \"Link in bio\" alone is what a 0.35% click rate",
+    "   looks like.",
+    "4. Say which format you used and why it fits the deficit.",
+    "5. Then give one honest flag: the weakest line, or the exposure he is taking by posting it.",
+    "",
+    "Keep it tight. If something will not work, say so instead of drafting it anyway."
+  ].join("\n");
+
+  function addMsg(who, text, opts){
+    var wrap = document.createElement("div");
+    wrap.className = "msg" + (who === "me" ? " me" : "");
+    var w = document.createElement("span");
+    w.className = "who";
+    w.textContent = who === "me" ? "you" : "studio";
+    var b = document.createElement("div");
+    b.className = "bub" + (opts && opts.think ? " think dots" : "");
+    b.textContent = text;
+    wrap.appendChild(w); wrap.appendChild(b);
+    $("log").appendChild(wrap);
+    wrap.scrollIntoView({block:"nearest", behavior:"smooth"});
+    return {wrap:wrap, bubble:b};
+  }
+
+  function sampleErrCopy(code){
+    var m = {
+      not_granted:["Drafting is off", "You declined access for this view. Reload to be asked again."],
+      sampling_disabled:["Drafting unavailable", "Claude access is switched off for this page right now."],
+      not_declared:["Drafting unavailable", "This page is not set up to ask Claude. That is a page bug."],
+      capability_disabled:["Drafting unavailable here", "Open this page on claude.ai to draft."],
+      capability_removed:["Drafting unavailable here", "Open this page on claude.ai to draft."],
+      session_expired:["Session expired", "Reload the page and try again."],
+      rate_limited:["Too many at once", "Give it a moment before sending again."],
+      queue_overflow:["Queue is full", "Wait a few seconds and send again."],
+      prompt_too_large:["That is too much at once", "Send a shorter message or start a new thread."],
+      refused:["Claude declined that one", "Rephrase it and try again."],
+      empty_completion:["Nothing came back", "Send it again."],
+      invalid_request:["Bad request", "That is a page bug."],
+      transform_error:["Bad request", "That is a page bug."],
+      upstream_error:["Something broke upstream", "Try that again."],
+      cancelled:["Stopped", "Kept what had been written."]
+    };
+    return m[code] || ["That did not go through", "Try again, or start a new thread."];
+  }
+
+  function setBusy(on){
+    busy = on;
+    $("send").disabled = on;
+    $("stop").hidden = !on;
+    $("box").disabled = on;
+    document.querySelectorAll(".chip").forEach(function(c){
+      if (!c.dataset.spent) c.disabled = on;
+    });
+  }
+
+  async function ask(userText, angle, shown){
+    if (!sample || busy || !userText.trim()) return;
+    addMsg("me", shown || userText);
+    turns.push({role:"user", content:userText});
+    var slot = addMsg("studio", "Thinking", {think:true});
+    setBusy(true);
+    ctl = new AbortController();
+    var got = "";
+    try {
+      var res = await sample([{role:"user", content:RULES}].concat(turns), {
+        cache:false, signal:ctl.signal, modelTier:"default",
+        onText:function(u){
+          slot.bubble.className = "bub";
+          slot.bubble.textContent = u.text;
+          got = u.text;
+        }
+      });
+      slot.bubble.className = "bub";
+      slot.bubble.textContent = res.text;
+      turns.push({role:"assistant", content:res.text});
+      attachActions(slot, res.text, angle);
+      if (res.truncated){
+        var t = document.createElement("div");
+        t.className = "note-box warn";
+        t.innerHTML = "<strong>Cut short</strong><div>Ask for one piece at a time.</div>";
+        slot.wrap.appendChild(t);
+      }
+      if (angle) markUsed(angle);
+      showFollowups();
+    } catch (e){
+      var c = e && e.code, copy = sampleErrCopy(c);
+      if (c === "cancelled" && (e.text || got)){
+        slot.bubble.className = "bub";
+        slot.bubble.textContent = e.text || got;
+        turns.push({role:"assistant", content:e.text || got});
+        attachActions(slot, e.text || got, angle);
+      } else {
+        slot.wrap.remove();
+        turns.pop();
+        var box = document.createElement("div");
+        box.className = "note-box crit";
+        box.innerHTML = "<strong>" + esc(copy[0]) + "</strong><div>" + esc(copy[1]) + "</div>";
+        $("log").appendChild(box);
+        box.scrollIntoView({block:"nearest"});
+      }
+      if (c === "not_granted" || c === "sampling_disabled" || c === "not_declared" ||
+          c === "capability_disabled" || c === "capability_removed"){
+        sample = null;
+        $("send").disabled = true;
+        $("box").disabled = true;
+      }
+    } finally {
+      ctl = null;
+      setBusy(false);
+      if (sample) $("box").focus();
+    }
+  }
+
+  function attachActions(slot, text, angle){
+    var acts = document.createElement("div");
+    acts.className = "acts";
+    var save = document.createElement("button");
+    save.className = "mini"; save.type = "button"; save.textContent = "Save draft";
+    save.onclick = async function(){
+      save.disabled = true;
+      if (!db){ save.textContent = "Cannot save"; return; }
+      try {
+        await db.collection("drafts").add({
+          text:text,
+          angleId:angle ? angle.id : null,
+          angleTitle:angle ? angle.title : null,
+          deficit:angle ? (angle.deficit || null) : null,
+          metricAtSave:angle ? (TSTATE[angle.deficit] == null ? null : TSTATE[angle.deficit]) : null,
+          savedAt:new Date().toISOString()
+        });
+        save.textContent = "Saved"; save.className = "mini done";
+      } catch (err){ save.textContent = "Save failed"; save.disabled = false; }
+    };
+    acts.appendChild(save);
+    var copy = document.createElement("button");
+    copy.className = "mini"; copy.type = "button"; copy.textContent = "Copy";
+    copy.onclick = function(){
+      if (!navigator.clipboard){ copy.textContent = "Select it manually"; return; }
+      navigator.clipboard.writeText(text).then(function(){
+        copy.textContent = "Copied";
+        setTimeout(function(){ copy.textContent = "Copy"; }, 1600);
+      }).catch(function(){ copy.textContent = "Select it manually"; });
+    };
+    acts.appendChild(copy);
+    slot.wrap.appendChild(acts);
+  }
+
+  var FOLLOWUPS = [
+    "Rewrite the hook three different ways.",
+    "Cut it by a third without losing the anchor.",
+    "Turn this into a carousel brief.",
+    "What would make this flop?",
+    "Make the call to action harder working."
+  ];
+  function showFollowups(){
+    var old = document.getElementById("followrow");
+    if (old) old.remove();
+    var row = document.createElement("div");
+    row.className = "chips"; row.id = "followrow";
+    FOLLOWUPS.forEach(function(f){
+      var b = document.createElement("button");
+      b.className = "chip follow"; b.type = "button";
+      b.innerHTML = '<span class="ct">' + esc(f) + "</span>";
+      b.onclick = function(){ ask(f, null); };
+      row.appendChild(b);
+    });
+    $("log").appendChild(row);
+    row.scrollIntoView({block:"nearest", behavior:"smooth"});
+  }
+
+  /* Live deficit ordering: whichever target sits furthest below goal is drafted against first.
+     This is the reason the two surfaces belong in one artifact. */
+  function deficitRank(){
+    var order = [];
+    TARGETS.forEach(function(t){
+      var cur = TSTATE[t.key];
+      var ratio = (typeof cur === "number" && isFinite(cur) && t.goal > 0) ? cur / t.goal : -1;
+      order.push({key:t.key, ratio:ratio});
+    });
+    var known = order.filter(function(o){ return o.ratio >= 0; });
+    if (!known.length) return {click:0, owned:1, views:2};
+    known.sort(function(a, b){ return a.ratio - b.ratio; });
+    var map = {};
+    known.forEach(function(o, i){ map[o.key] = i; });
+    order.forEach(function(o){ if (map[o.key] == null) map[o.key] = 9; });
+    return map;
+  }
+
+  function angleChip(a, spent){
+    var b = document.createElement("button");
+    b.className = "chip"; b.type = "button";
+    if (spent) b.dataset.spent = "1";
+    var meta = [];
+    if (a.format) meta.push("<span>" + esc(a.format) + "</span>");
+    if (a.record) meta.push('<span class="hot">' + esc(a.record) + "</span>");
+    if (a.effort) meta.push("<span>" + esc(a.effort) + "</span>");
+    if (a.spendable && (a.uses || 0) > 0) meta.push('<span class="spent">spent</span>');
+    else if ((a.uses || 0) > 0) meta.push('<span class="spent">used ' + a.uses + "x</span>");
+    b.innerHTML = '<span class="ct">' + esc(a.title) + "</span>" +
+                  '<span class="cm">' + meta.join("") + "</span>";
+    b.onclick = function(){
+      if (a.spendable && (a.uses || 0) > 0){
+        addMsg("studio", "Heads up: you have used this one already. It worked because it was the " +
+          "first time. Reworking it is fine, running it straight again is not.");
+      }
+      ask(a.prompt, a, a.title);
+    };
+    return b;
+  }
+
+  function rankAngles(list){
+    var pri = deficitRank();
+    return list.slice().sort(function(x, y){
+      var xs = (x.uses || 0) > 0 ? 1 : 0, ys = (y.uses || 0) > 0 ? 1 : 0;
+      if (xs !== ys) return xs - ys;
+      var xp = pri[x.deficit] == null ? 8 : pri[x.deficit];
+      var yp = pri[y.deficit] == null ? 8 : pri[y.deficit];
+      if (xp !== yp) return xp - yp;
+      return String(x.title).localeCompare(String(y.title));
+    });
+  }
+
+  function renderAngles(){
+    if (!$("chips")) return;
+    var open = [], spent = [];
+    rankAngles(angles).forEach(function(a){
+      if (a.status === "dismissed") return;
+      ((a.uses || 0) > 0 ? spent : open).push(a);
+    });
+    var host = $("chips");
+    host.innerHTML = "";
+    if (!open.length && !spent.length){
+      host.innerHTML = '<div class="note-box"><strong>No angles stored yet</strong><div>' +
+        "Ask Gio to seed them, or just type what you want drafted below.</div></div>";
+    } else if (!open.length){
+      host.innerHTML = '<div class="note-box"><strong>You have used every angle on file</strong><div>' +
+        "Ask for a fresh set, or type your own below. Used ones are still open underneath.</div></div>";
+    }
+    open.forEach(function(a){ host.appendChild(angleChip(a, false)); });
+
+    var sw = $("spent-wrap"), sh = $("spent");
+    sh.innerHTML = "";
+    if (spent.length){
+      sw.hidden = false;
+      $("spent-sum").textContent = "Already used (" + spent.length + ")";
+      spent.forEach(function(a){ sh.appendChild(angleChip(a, true)); });
+    } else { sw.hidden = true; }
+
+    var badge = $("tab-count");
+    if (badge) badge.textContent = open.length ? String(open.length) : "";
+
+    var note = $("rack-note");
+    if (note){
+      var pri = deficitRank(), worst = null, best = 9;
+      Object.keys(pri).forEach(function(k){ if (pri[k] < best){ best = pri[k]; worst = k; } });
+      var label = {click:"click rate", owned:"owned-source signups", views:"short-form views"}[worst];
+      note.textContent = label ? "unused first, then " + label : "ranked by what you have not used";
+    }
+  }
+
+  async function markUsed(a){
+    a.uses = (a.uses || 0) + 1;
+    a.status = "used";
+    renderAngles();
+    if (!db) return;
+    try {
+      await db.collection("angles").doc(a.id).update({
+        uses:a.uses, status:"used", lastUsedAt:new Date().toISOString(),
+        metricAtUse:(a.deficit && TSTATE[a.deficit] != null) ? TSTATE[a.deficit] : null
+      });
+    } catch (e){ /* ranking still reflects it for this view */ }
+  }
+
+  async function initStudio(){
+    var res = await Promise.all([
+      window.claude.use("db").catch(function(){ return null; }),
+      window.claude.use("sample").catch(function(){ return null; })
+    ]);
+    db = res[0]; sample = res[1];
+
+    if (!sample){
+      $("send").disabled = true;
+      $("box").disabled = true;
+      $("greet").textContent = "Drafting is unavailable in this view, so the angles are read-only. " +
+        "Open the page on claude.ai to draft from them.";
+    }
+    if (db){
+      try {
+        var snap = await db.collection("angles").get();
+        angles = snap.docs.map(function(d){ var v = d.data() || {}; v.id = d.id; return v; });
+      } catch (e){ angles = []; }
+    }
+    renderAngles();
+  }
+
   /* ---------- boot ---------- */
   function noLive(err){
     var e = errCopy(err || {code:"capability_disabled"}, "your connectors");
@@ -1004,6 +1497,7 @@
     });
     renderTargets();
     renderDays();
+    if (window.claude && window.claude.use) initStudio();
   }
 
   function dayRange(days){
@@ -1074,7 +1568,57 @@
       "c-trend", renderTrend, 0);
 
     set("stamp", "live · refreshes every 5 min");
+    initStudio();
   }
+
+
+  /* ---------- tabs + composer ---------- */
+  function showView(which){
+    var dash = which === "dash";
+    $("view-dash").hidden = !dash;
+    $("view-studio").hidden = dash;
+    $("tab-dash").setAttribute("aria-selected", dash ? "true" : "false");
+    $("tab-studio").setAttribute("aria-selected", dash ? "false" : "true");
+    $("refresh").hidden = !dash;
+    $("newthread").hidden = dash;
+    $("stamp").style.visibility = dash ? "visible" : "hidden";
+    if (!dash && sample && !$("box").disabled) $("box").focus();
+  }
+  $("tab-dash").addEventListener("click", function(){ showView("dash"); });
+  $("tab-studio").addEventListener("click", function(){ showView("studio"); });
+  document.querySelector(".tabs").addEventListener("keydown", function(e){
+    if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+    e.preventDefault();
+    var toDash = $("tab-studio").getAttribute("aria-selected") === "true";
+    showView(toDash ? "dash" : "studio");
+    $(toDash ? "tab-dash" : "tab-studio").focus();
+  });
+
+  var box = $("box");
+  function grow(){
+    box.style.height = "auto";
+    box.style.height = Math.min(170, box.scrollHeight) + "px";
+  }
+  box.addEventListener("input", grow);
+  box.addEventListener("keydown", function(e){
+    if (e.key === "Enter" && !e.shiftKey){
+      e.preventDefault();
+      var v = box.value; box.value = ""; grow();
+      ask(v, null);
+    }
+  });
+  $("send").addEventListener("click", function(){
+    var v = box.value; box.value = ""; grow();
+    ask(v, null);
+  });
+  $("stop").addEventListener("click", function(){ if (ctl) ctl.abort(); });
+  $("newthread").addEventListener("click", function(){
+    if (busy && ctl) ctl.abort();
+    turns = [];
+    var log = $("log");
+    while (log.children.length > 1) log.removeChild(log.lastChild);
+    box.value = ""; grow(); box.focus();
+  });
 
   var btn = $("refresh");
   if (btn) btn.addEventListener("click", function(){
