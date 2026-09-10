@@ -39,7 +39,7 @@ Tracked targets, in priority order:
 
 | Target | Goal | What a draft must do about it |
 |---|---|---|
-| Click rate | 1.5% | Give the link a stated reason. Name what is on the other side. |
+| Click rate | 1.5% | Give the link a stated reason. Name what is on the other side. **First check there is a link at all**: as of 2026-09-10 recent issues carried zero or one tracked link, and none pointed at anything Gio owns. |
 | Owned-source signups | 15 / 4 weeks | Point at something Gio owns, never only at a partner referral. |
 | Short-form views | 10,000 / 30 days | Reach is the constraint, so the hook carries the whole job. |
 

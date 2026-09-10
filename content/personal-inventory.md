@@ -49,6 +49,27 @@ value. He has not retracted it publicly.
 **2026-09-09 :** Digital asset hygiene. Capture is not accessible across phone and laptop. Work
 footage and M&M footage are tangled. The green-folder system exists but is not being fed.
 
+## The link finding (2026-09-10)
+
+Read directly from beehiiv's per-link click data, which is the reason the click rate looks the way
+it does.
+
+| Issue | Tracked links | What they were |
+|---|---|---|
+| Sept 8, "You're Not in Flow. You're Just Grinding." | 0 | Nothing to click |
+| Sept 3, "Nobody Approved the AI You're Using at Work" | 1 | A Cloud Security Alliance research note |
+| Aug 27, "Structured Procrastination" | 1 | A shortform.com sponsor placement |
+
+Across three consecutive issues: two tracked links total, and **neither belongs to him.** One is a
+third party's research, one is a paid ad.
+
+This changes the diagnosis. A 0.33% click rate is not a persuasion problem and not a copy problem.
+There is close to nothing to click, and what exists sends the reader to someone else. It also explains
+the zero owned-source signups: there is no owned surface being linked to, so recommendations are the
+only path in.
+
+The click rate and the owned-signup number are the same problem wearing two hats.
+
 ## Numbers I own
 
 Documented and safe to use: 10+ years production, 5+ years communications, $30K saved at Shangri La,

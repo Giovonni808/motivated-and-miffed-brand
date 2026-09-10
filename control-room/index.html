@@ -591,11 +591,12 @@
     <section class="lab">
       <div class="rack-head">
         <h2>Outliers to replicate</h2>
-        <span class="note">vidIQ &middot; 5 credits per search</span>
+        <span class="note">vidIQ costs credits &middot; beehiiv is free</span>
       </div>
       <div class="lab-bar">
         <input id="lab-q" type="text" placeholder="Topic to search, e.g. productivity systems for creators">
         <button class="btn solid" id="lab-go" type="button">Find outliers</button>
+        <button class="btn" id="lab-mine" type="button">Mine my own issues</button>
       </div>
       <div class="cards" id="lab-out"></div>
       <div id="lab-note" class="note-box"><strong>Start from what already worked</strong><div>Search
@@ -1761,6 +1762,183 @@ You can also just type. I know your voice rules, your retired vocabulary, your d
     }
   }
 
+
+  /* ---------- own-issue mining ----------
+     Other people's outliers tell you what format travels. Your own tell you what subject your
+     list already answered to, which is the more reliable signal and costs nothing to read. */
+  var OWNED = /motivated-and-miffed|motivatedandmiffed/i;
+  var SPONSOR = /_bhiiv=opp_|bhcl_id=/i;
+
+  function classifyLink(u){
+    if (SPONSOR.test(u)) return "sponsor";
+    if (OWNED.test(u)) return "owned";
+    return "external";
+  }
+
+  function issueCard(it, med){
+    var c = document.createElement("div");
+    c.className = "card";
+    var stats = [];
+    var beatOpen = med.open != null && it.open != null && it.open > med.open;
+    var beatClick = med.click != null && it.click != null && it.click > med.click;
+    if (beatOpen) stats.push('<span class="stat hot">beat your open median</span>');
+    if (beatClick) stats.push('<span class="stat hot">beat your click median</span>');
+    if (it.open != null) stats.push('<span class="stat">' + esc(pct(it.open, 1)) + " open</span>");
+    if (it.click != null) stats.push('<span class="stat">' + esc(pct(it.click, 2)) + " click</span>");
+    if (it.sent != null) stats.push('<span class="stat">' + esc(num(it.sent)) + " sent</span>");
+    stats.push('<span class="stat' + (it.links === 0 ? "" : "") + '">' +
+      esc(String(it.links)) + (it.links === 1 ? " link" : " links") + "</span>");
+    if (it.owned > 0) stats.push('<span class="stat hot">' + esc(String(it.owned)) + " yours</span>");
+    if (it.sponsor > 0) stats.push('<span class="stat">' + esc(String(it.sponsor)) + " sponsor</span>");
+
+    var detail = [
+      "Issue: " + (it.title || ""),
+      "Sent: " + (it.date || "unknown"),
+      "Delivered: " + (it.delivered != null ? num(it.delivered) : "unknown"),
+      "Open rate: " + (it.open != null ? pct(it.open, 2) : "unknown"),
+      "Click rate: " + (it.click != null ? pct(it.click, 2) : "unknown"),
+      "Tracked links in the issue: " + it.links,
+      "  of those, links to something Gio owns: " + it.owned,
+      "  sponsor placements: " + it.sponsor,
+      "  third-party links: " + (it.links - it.owned - it.sponsor)
+    ];
+    if (it.urls.length){
+      detail.push("Links and their clicks:");
+      it.urls.forEach(function(u){
+        detail.push("  [" + u.kind + "] " + u.clicks + " clicks  " + u.url.slice(0, 150));
+      });
+    } else {
+      detail.push("This issue contained no tracked links at all, so a click was not possible.");
+    }
+    if (it.tags && it.tags.length) detail.push("Content tags: " + it.tags.join(", "));
+
+    c.innerHTML =
+      '<div class="top"><span class="handle">' + esc(it.title || "(untitled)") + "</span>" +
+      '<span class="plat">' + esc(it.date || "") + "</span></div>" +
+      '<div class="stats">' + stats.join("") + "</div>" +
+      "<details><summary>The numbers behind it</summary><pre>" + esc(detail.join("\n")) + "</pre></details>";
+
+    var acts = document.createElement("div");
+    acts.className = "acts";
+    var why = document.createElement("button");
+    why.className = "mini"; why.type = "button";
+    why.textContent = (beatOpen || beatClick) ? "Work out why this worked" : "Work out what to change";
+    why.onclick = function(){
+      var lead = (beatOpen || beatClick)
+        ? "This issue of my own newsletter beat my median. Work out why, then tell me what to repeat."
+        : "This issue of my own newsletter underperformed. Work out what to change.";
+      showView("studio");
+      ask(lead + " Answer the REPLICATION BRIEF points, treating my own issue as the outlier.\n\n" +
+          detail.join("\n"), null, "My issue: " + (it.title || "").slice(0, 40));
+    };
+    acts.appendChild(why);
+
+    var keep = document.createElement("button");
+    keep.className = "mini"; keep.type = "button"; keep.textContent = "Keep as angle";
+    keep.onclick = async function(){
+      keep.disabled = true; keep.textContent = "Saving";
+      if (!db){ keep.textContent = "Cannot save"; return; }
+      var id = "issue-" + String(it.id || "x").replace(/[^A-Za-z0-9]/g, "").slice(-14) + "-" + Date.now().toString(36);
+      try {
+        await db.collection("angles").doc(id).set({
+          title: "Build on: " + String(it.title || "an issue").slice(0, 60),
+          prompt: "This is one of my own newsletter issues and its real numbers. Work the REPLICATION " +
+                  "BRIEF points against it, then draft short-form that carries the same idea.\n\n" + detail.join("\n"),
+          anchor: "My own issue",
+          format: "issue repurpose",
+          record: (beatOpen || beatClick) ? "beat my median" : "own data",
+          effort: "under an hour",
+          deficit: "click",
+          spendable: false, status: "open", uses: 0,
+          source: "beehiiv", savedAt: new Date().toISOString()
+        });
+        keep.textContent = "Kept"; keep.className = "mini done";
+        var snap = await db.collection("angles").get();
+        angles = snap.docs.map(function(d){ var v = d.data() || {}; v.id = d.id; return v; });
+        renderAngles();
+      } catch (e){ keep.textContent = "Save failed"; keep.disabled = false; }
+    };
+    acts.appendChild(keep);
+    c.appendChild(acts);
+    return c;
+  }
+
+  function median(nums){
+    var a = nums.filter(function(n){ return typeof n === "number" && isFinite(n); }).sort(function(x, y){ return x - y; });
+    if (!a.length) return null;
+    var m = Math.floor(a.length / 2);
+    return a.length % 2 ? a[m] : (a[m - 1] + a[m]) / 2;
+  }
+
+  async function mineIssues(){
+    if (labBusy) return;
+    if (!mcp){ labMsg("crit", "Live read unavailable", "This view cannot reach beehiiv."); return; }
+    if (!ids.pub){ labMsg("warn", "Publication not resolved yet", "Give the dashboard a moment to finish loading, then try again."); return; }
+    labBusy = true;
+    $("lab-mine").disabled = true;
+    $("lab-mine").textContent = "Reading";
+    $("lab-out").innerHTML = "";
+    labMsg("", "Reading your last issues", "Pulling per-issue open rates, click rates and every tracked link.");
+    var opts = {cache:{staleTime:300000}};
+    try {
+      var lp = await mcp.callTool(S_BEE, "list_posts",
+        {publication_id:ids.pub, status:"published", per_page:6, order_by:"newest_first"}, opts);
+      var posts = (lp.payload && lp.payload.posts) || [];
+      if (!posts.length){ labMsg("warn", "No published issues", "beehiiv returned nothing to read."); return; }
+
+      var items = await Promise.all(posts.map(async function(po){
+        var it = {id:po.id, title:po.title, date:po.scheduled_at ? fmtDate(po.scheduled_at) : "",
+                  tags:(po.content_tags || []).map(function(t){ return t.display; }).filter(Boolean),
+                  open:null, click:null, sent:null, delivered:null, links:0, owned:0, sponsor:0, urls:[]};
+        try {
+          var st = await mcp.callTool(S_BEE, "get_post_stats", {post_id:po.id}, opts);
+          var e = st.payload && st.payload.email;
+          if (e){ it.open = e.open_rate; it.click = e.click_rate; it.sent = e.total_sent; it.delivered = e.total_delivered; }
+        } catch (err){ /* leave blank */ }
+        try {
+          var ck = await mcp.callTool(S_BEE, "list_post_clicks", {post_id:po.id, per_page:50}, opts);
+          var cl = (ck.payload && ck.payload.clicks) || [];
+          it.links = cl.length;
+          cl.forEach(function(c){
+            var kind = classifyLink(c.url || "");
+            if (kind === "owned") it.owned++;
+            if (kind === "sponsor") it.sponsor++;
+            it.urls.push({kind:kind, url:c.url || "", clicks:(c.email && c.email.total_unique_clicked) || 0});
+          });
+        } catch (err){ /* leave blank */ }
+        return it;
+      }));
+
+      var med = {open:median(items.map(function(i){ return i.open; })),
+                 click:median(items.map(function(i){ return i.click; }))};
+      var host = $("lab-out");
+      items.forEach(function(it){ host.appendChild(issueCard(it, med)); });
+
+      var totalLinks = items.reduce(function(a, i){ return a + i.links; }, 0);
+      var totalOwned = items.reduce(function(a, i){ return a + i.owned; }, 0);
+      var empties = items.filter(function(i){ return i.links === 0; }).length;
+      if (totalOwned === 0){
+        labMsg("crit", "Across these " + items.length + " issues, nothing links to anything you own",
+          totalLinks + (totalLinks === 1 ? " tracked link" : " tracked links") + " in total" +
+          (empties ? ", and " + empties + (empties === 1 ? " issue had none at all" : " issues had none at all") : "") +
+          ". A click rate cannot rise above the number of things there are to click, so this is arithmetic " +
+          "before it is copywriting.");
+      } else {
+        labMsg("", "Read " + items.length + " issues",
+          totalLinks + " tracked links, " + totalOwned + " of them yours. Median open " +
+          (med.open != null ? pct(med.open, 1) : "unknown") + ", median click " +
+          (med.click != null ? pct(med.click, 2) : "unknown") + ". Pick one to work on.");
+      }
+    } catch (e){
+      var copy = errCopy(e, S_BEE);
+      labMsg("crit", copy.title, copy.detail);
+    } finally {
+      labBusy = false;
+      $("lab-mine").disabled = false;
+      $("lab-mine").textContent = "Mine my own issues";
+    }
+  }
+
   /* ---------- boot ---------- */
   function noLive(err){
     var e = errCopy(err || {code:"capability_disabled"}, "your connectors");
@@ -1890,6 +2068,7 @@ You can also just type. I know your voice rules, your retired vocabulary, your d
   });
   $("stop").addEventListener("click", function(){ if (ctl) ctl.abort(); });
   $("lab-go").addEventListener("click", findOutliers);
+  $("lab-mine").addEventListener("click", mineIssues);
   $("lab-q").addEventListener("keydown", function(e){
     if (e.key === "Enter"){ e.preventDefault(); findOutliers(); }
   });
