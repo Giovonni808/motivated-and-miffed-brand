@@ -104,3 +104,19 @@ session can pass through, which is nothing here.
 
 Both routines must be created in the claude.ai Routines UI, where connectors attach
 properly. The prompts are kept in `routines/`.
+
+## When beehiiv metrics disappear from the page
+
+The connector being healthy on the account and the page being allowed to call it are two different
+things. beehiiv's directory entry changed at some point, and reconnecting it resets the per-artifact
+consent, so the page starts getting refused while the same call works fine from a session.
+
+Check in this order:
+
+1. Call `get_publication_stats` from a normal session. If it answers, the connector is fine and the
+   problem is the page's permission.
+2. Open the artifact and allow beehiiv when it asks. If it never asks, check the connector settings
+   for that artifact and switch beehiiv back on.
+3. Read the error code the panel prints. `not_in_manifest` means the page is not allowed to call it
+   for this viewer. `needs_reauth` means the credential lapsed. They have different fixes, which is
+   why each panel names the code.

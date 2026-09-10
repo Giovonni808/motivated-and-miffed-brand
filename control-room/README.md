@@ -13,16 +13,48 @@ Every number is read live from beehiiv, Buffer and vidIQ with the viewer's own c
 
 ## Studio
 
-Angle chips that draft on click, plus a chat. Each angle carries the three inputs `mm-shortform-forge`
+Three parts: the outlier lab, the angle chips, and the chat.
+
+### Outlier lab
+
+Search Instagram and TikTok for posts beating their own creator's median, then pick one and get a
+replication brief rather than a draft. Search is manual because vidIQ bills 5 credits per call.
+
+`vidiq_instagram_tiktok_outlier_search` returns prose rather than JSON, which is bad for a table and
+ideal here. The page splits it for display and passes the untouched block to Claude, so nothing is
+lost to a parser. If the shape ever changes, the cards degrade to raw text rather than breaking.
+
+Each card offers two actions:
+
+- **Work out how to replicate** sends the outlier into the chat as a replication brief.
+- **Keep as angle** writes it into `angles` so it joins the chip rack and survives the session.
+
+Rows in the dashboard's Topic Radar carry the same Replicate action, built from the numbers already
+on screen so it costs no extra credits.
+
+### The replication brief
+
+Claude answers five points before drafting anything:
+
+1. **The mechanism.** What made it work, in one sentence. "It was relatable" is rejected.
+2. **What transfers and what does not.** Their audience and assets are not his.
+3. **His version.** The same mechanism on one of his anchors, with the hook line written out.
+4. **Production plan.** What to shoot, in order, with an honest time estimate.
+5. **The kill criterion.** What would make it a bad idea for him specifically.
+
+The full draft comes only if he asks after that. The point is to understand the mechanism before
+spending an hour copying the surface of it.
+
+### Angle chips Each angle carries the three inputs `mm-shortform-forge`
 requires: a measured deficit, a format with a proven outlier track record, and a personal anchor.
 
-### Ranking
+#### Ranking
 
 Unused angles first. Then by **whichever target is currently furthest below goal**, computed live from
 the same metrics the Dashboard reads, rather than a fixed order. Used angles collapse into a row so a
 good one can be reworked. An angle marked `spendable` warns before it re-runs.
 
-### What gets recorded
+#### What gets recorded
 
 | Write | When | Why it matters |
 |---|---|---|

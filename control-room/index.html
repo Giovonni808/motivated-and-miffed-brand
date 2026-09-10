@@ -354,6 +354,47 @@
   .btn.solid:hover{filter:brightness(1.08); background:var(--accent)}
   textarea:focus-visible, summary:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
 
+  /* ---------- outlier lab ---------- */
+  .lab{display:flex; flex-direction:column; gap:12px}
+  .lab-bar{display:flex; gap:9px; align-items:center; flex-wrap:wrap}
+  .lab-bar input{
+    flex:1; min-width:200px; font-family:var(--body); font-size:13.5px; color:var(--text);
+    background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:10px 12px;
+  }
+  .lab-bar input::placeholder{color:var(--dim)}
+  .lab-bar input:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+  .cards{display:grid; gap:11px; grid-template-columns:1fr}
+  @media(min-width:820px){ .cards{grid-template-columns:repeat(2,1fr)} }
+  .card{
+    background:var(--surface); border:1px solid var(--line); border-radius:11px; padding:13px 14px;
+    display:flex; flex-direction:column; gap:8px;
+  }
+  .card .top{display:flex; align-items:baseline; justify-content:space-between; gap:10px}
+  .card .handle{font-weight:600; font-size:13.5px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+  .card .plat{
+    font-family:var(--mono); font-size:9px; letter-spacing:.09em; text-transform:uppercase;
+    color:var(--dim); flex:none;
+  }
+  .card .cap{font-size:12.5px; color:var(--muted); line-height:1.45}
+  .card .stats{display:flex; gap:7px; flex-wrap:wrap}
+  .card .stat{
+    font-family:var(--mono); font-size:9.5px; letter-spacing:.05em; text-transform:uppercase;
+    background:var(--surface-2); border:1px solid var(--line); border-radius:6px; padding:3px 7px;
+    color:var(--muted);
+  }
+  .card .stat.hot{color:var(--accent-ink); border-color:var(--accent-soft)}
+  .card .acts{display:flex; gap:7px; flex-wrap:wrap; margin-top:1px}
+  .card details summary{
+    font-family:var(--mono); font-size:9px; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--dim); cursor:pointer; list-style:none;
+  }
+  .card details summary::-webkit-details-marker{display:none}
+  .card details summary:hover{color:var(--text)}
+  .card details pre{
+    margin:8px 0 0; font-family:var(--mono); font-size:11px; line-height:1.5; color:var(--muted);
+    white-space:pre-wrap; word-wrap:break-word; max-height:210px; overflow:auto;
+  }
+
   /* ---------- data tables ---------- */
   .tbl{width:100%; border-collapse:collapse; font-size:13px}
   .tbl th{
@@ -546,6 +587,21 @@
   </div><!-- /view-dash -->
 
   <div class="view" id="view-studio" role="tabpanel" aria-labelledby="tab-studio" hidden>
+
+    <section class="lab">
+      <div class="rack-head">
+        <h2>Outliers to replicate</h2>
+        <span class="note">vidIQ &middot; 5 credits per search</span>
+      </div>
+      <div class="lab-bar">
+        <input id="lab-q" type="text" placeholder="Topic to search, e.g. productivity systems for creators">
+        <button class="btn solid" id="lab-go" type="button">Find outliers</button>
+      </div>
+      <div class="cards" id="lab-out"></div>
+      <div id="lab-note" class="note-box"><strong>Start from what already worked</strong><div>Search
+      Instagram and TikTok for posts that beat their own creator's median, then pick one and I will
+      work out the mechanism, your version of it, and what you would actually have to shoot.</div></div>
+    </section>
 
     <section class="rack">
       <div class="rack-head">
@@ -1024,10 +1080,11 @@ You can also just type. I know your voice rules, your retired vocabulary, your d
     }
     var html = '<div class="scroll"><table class="tbl"><thead><tr><th>Video</th>' +
       '<th class="r">Breakout</th><th class="r">Views</th><th class="r">Views/hr</th>' +
-      '<th class="r">Eng.</th><th class="r">Subs</th><th class="r">Len</th>' +
+      '<th class="r">Eng.</th><th class="r">Subs</th><th class="r">Len</th><th class="r"></th>' +
       "</tr></thead><tbody>";
     var trap = 0;
-    p.videos.slice(0, 6).forEach(function(v){
+    var shown = p.videos.slice(0, 6);
+    shown.forEach(function(v, idx){
       var t = String(v.videoTitle || "").replace(/\s+/g, " ").trim();
       if (t.length > 66) t = t.slice(0, 66) + "…";
       var bs = typeof v.breakoutScore === "number" ? v.breakoutScore : null;
@@ -1048,7 +1105,9 @@ You can also just type. I know your voice rules, your retired vocabulary, your d
                             ? esc((v.engagementRate * 100).toFixed(1)) + "%" : "-") + "</td>" +
         '<td class="r">' + esc(num(v.subscriberCount)) + "</td>" +
         '<td class="r">' + (typeof v.videoDuration === "number" ? esc(String(v.videoDuration)) + "s" : "-") +
-        "</td></tr>";
+        "</td>" +
+        '<td class="r"><button class="mini" type="button" data-rep="' + esc(String(idx)) +
+        '">Replicate</button></td></tr>';
     });
     html += "</tbody></table></div>";
     html += '<div class="note-box"><strong>Breakout is relative, views are absolute</strong><div>' +
@@ -1059,6 +1118,38 @@ You can also just type. I know your voice rules, your retired vocabulary, your d
       "</div></div>";
     html += '<div class="stale">one vidIQ call per open · costs credits, so this panel does not auto-poll</div>';
     set("c-trend", html);
+
+    // Bridge the radar into the studio: a row worth copying becomes a replication brief.
+    var host = $("c-trend");
+    if (!host) return;
+    host.querySelectorAll("button[data-rep]").forEach(function(b){
+      b.addEventListener("click", function(){
+        var v = shown[parseInt(b.getAttribute("data-rep"), 10)];
+        if (!v) return;
+        var lines = [
+          "Platform: YouTube Shorts",
+          "Title: " + (v.videoTitle || ""),
+          "Channel: " + (v.channelTitle || "") +
+            (typeof v.subscriberCount === "number" ? " (" + num(v.subscriberCount) + " subscribers)" : ""),
+          "Category: " + (v.mainCategory || "unknown"),
+          "Breakout score: " + (typeof v.breakoutScore === "number"
+            ? v.breakoutScore.toFixed(1) + "x its own channel average" : "unknown"),
+          "Views: " + num(v.viewCount),
+          "Views per hour: " + (typeof v.vph === "number" ? num(Math.round(v.vph)) : "unknown"),
+          "Engagement rate: " + (typeof v.engagementRate === "number"
+            ? (v.engagementRate * 100).toFixed(1) + "%" : "unknown"),
+          "Duration: " + (typeof v.videoDuration === "number" ? v.videoDuration + " seconds" : "unknown"),
+          "Tags: " + ((v.videoTags && v.videoTags.length) ? v.videoTags.slice(0, 12).join(", ") : "none listed")
+        ];
+        if (typeof v.breakoutScore === "number" && typeof v.vph === "number" &&
+            v.breakoutScore > 50 && v.vph < 10){
+          lines.push("Caution: high breakout with almost no current velocity, so it overperformed a " +
+                     "while ago rather than trending now.");
+        }
+        var label = String(v.videoTitle || "video").replace(/\s*#\S+/g, "").trim().slice(0, 42);
+        replicate(lines.join("\n"), label);
+      });
+    });
   }
 
   /* ---------- observance calendar ----------
@@ -1194,6 +1285,19 @@ You can also just type. I know your voice rules, your retired vocabulary, your d
     "   looks like.",
     "4. Say which format you used and why it fits the deficit.",
     "5. Then give one honest flag: the weakest line, or the exposure he is taking by posting it.",
+    "",
+    "REPLICATION BRIEF. When handed an outlier post to replicate, do not draft a script first. Answer",
+    "these five, in order, and keep each one short.",
+    "1. THE MECHANISM. What specifically made it work, in one sentence. The hook structure, the promise,",
+    "   the tension, or the format. \"It was relatable\" is not a mechanism.",
+    "2. WHAT TRANSFERS AND WHAT DOES NOT. Their audience, their assets and their follower count are not",
+    "   his. Say plainly which part is portable and which part is theirs.",
+    "3. HIS VERSION. The same mechanism applied to one of his anchors. Write the actual hook line out,",
+    "   do not describe it.",
+    "4. PRODUCTION PLAN. What he shoots or screen-records, in the order he does it, with an honest time",
+    "   estimate against the under-an-hour default. Say if it breaks that budget.",
+    "5. THE KILL CRITERION. What would make this a bad idea for him specifically. Every idea gets one.",
+    "Only draft the full piece if he asks after that.",
     "",
     "Keep it tight. If something will not work, say so instead of drafting it anyway."
   ].join("\n");
@@ -1484,6 +1588,179 @@ You can also just type. I know your voice rules, your retired vocabulary, your d
     renderAngles();
   }
 
+
+  /* ---------- outlier lab ----------
+     vidiq_instagram_tiktok_outlier_search returns prose, not JSON, so its payload arrives as a
+     string. That is bad for a table and ideal here: the raw block is exactly what Claude needs
+     to reason about a mechanism, so it is split for display and passed through untouched. */
+  var AUDIENCE = "Culture/Region: US; Global: true; Demographics: creators, builders and knowledge " +
+                 "workers 25-45 interested in productivity systems, AI tools and creative work;";
+  var labBusy = false;
+
+  function splitOutliers(text){
+    var lines = String(text == null ? "" : text).split("\n");
+    var out = [], platform = "", cur = null;
+    lines.forEach(function(ln){
+      var pm = ln.match(/^##\s+(.+?)\s*$/);
+      if (pm){ platform = pm[1]; return; }
+      if (/^\*\*@/.test(ln)){
+        if (cur) out.push(cur);
+        var hm = ln.match(/^\*\*(@[^*]+)\*\*/);
+        cur = {platform:platform, handle:hm ? hm[1] : "", lines:[ln]};
+        return;
+      }
+      if (cur) cur.lines.push(ln);
+    });
+    if (cur) out.push(cur);
+    return out.map(function(o){
+      o.text = o.lines.join("\n").trim();
+      // vidIQ separates handle from caption with an em dash; match it by escape, and accept a hyphen.
+      var cap = o.lines[0].match(/[\u2013\u2014-]\s*"([^"]*)"/);
+      o.caption = cap ? cap[1] : "";
+      var v = o.text.match(/([\d.,]+[KM]?)\s+views\s+\(([\d.,]+x)\s+their median of ([\d.,]+[KM]?)\)/);
+      if (v){ o.views = v[1]; o.mult = v[2]; o.median = v[3]; }
+      var f = o.text.match(/·\s*([\d.,]+[KM]?)\s+followers/);
+      if (f) o.followers = f[1];
+      var n = o.text.match(/\*\*niche\*\*:\s*(.+)/);
+      if (n) o.niche = n[1].trim();
+      var t = o.text.match(/time:\s*(.+)/);
+      if (t) o.time = t[1].trim();
+      var tpl = o.text.match(/template:\s*(.+)/);
+      if (tpl) o.template = tpl[1].trim();
+      return o;
+    }).filter(function(o){ return o.text.length > 20; });
+  }
+
+  function replicate(rawText, label){
+    var brief = "Here is an outlier post that beat its creator's own median. Work it as a REPLICATION " +
+      "BRIEF, the five numbered points, before drafting anything.\n\n" + rawText;
+    showView("studio");
+    ask(brief, null, "Replicate: " + label);
+  }
+
+  async function saveAsAngle(o){
+    if (!db) return false;
+    var id = "outlier-" + String(o.handle || "x").replace(/[^A-Za-z0-9]/g, "").slice(0, 20) +
+             "-" + Date.now().toString(36);
+    var doc = {
+      title: "Replicate " + (o.handle || "an outlier") +
+             (o.mult ? " (" + o.mult + ")" : ""),
+      prompt: "Here is an outlier post that beat its creator's own median. Work it as a REPLICATION " +
+              "BRIEF, the five numbered points, before drafting anything.\n\n" + o.text,
+      anchor: "Outlier replication",
+      format: o.template || (o.platform || "short-form"),
+      record: o.mult || "outlier",
+      effort: o.time || "unknown",
+      deficit: "views",
+      spendable: false,
+      status: "open",
+      uses: 0,
+      source: "vidiq_instagram_tiktok_outlier_search",
+      savedAt: new Date().toISOString()
+    };
+    try {
+      await db.collection("angles").doc(id).set(doc);
+      doc.id = id;
+      angles.push(doc);
+      renderAngles();
+      return true;
+    } catch (e){ return false; }
+  }
+
+  function outlierCard(o){
+    var c = document.createElement("div");
+    c.className = "card";
+    var stats = [];
+    if (o.mult) stats.push('<span class="stat hot">' + esc(o.mult) + " their median</span>");
+    if (o.views) stats.push('<span class="stat">' + esc(o.views) + " views</span>");
+    if (o.followers) stats.push('<span class="stat">' + esc(o.followers) + " followers</span>");
+    if (o.niche) stats.push('<span class="stat">' + esc(o.niche) + "</span>");
+    if (o.time) stats.push('<span class="stat">' + esc(o.time) + "</span>");
+    var cap = o.caption || "";
+    if (cap.length > 130) cap = cap.slice(0, 130) + "…";
+
+    c.innerHTML =
+      '<div class="top"><span class="handle">' + esc(o.handle || "unknown") + "</span>" +
+      '<span class="plat">' + esc(o.platform || "") + "</span></div>" +
+      (cap ? '<div class="cap">' + esc(cap) + "</div>" : "") +
+      '<div class="stats">' + stats.join("") + "</div>" +
+      "<details><summary>What vidIQ says about it</summary><pre>" + esc(o.text) + "</pre></details>";
+
+    var acts = document.createElement("div");
+    acts.className = "acts";
+
+    var rep = document.createElement("button");
+    rep.className = "mini"; rep.type = "button"; rep.textContent = "Work out how to replicate";
+    rep.onclick = function(){ replicate(o.text, o.handle || "outlier"); };
+    acts.appendChild(rep);
+
+    var keep = document.createElement("button");
+    keep.className = "mini"; keep.type = "button"; keep.textContent = "Keep as angle";
+    keep.onclick = async function(){
+      keep.disabled = true;
+      keep.textContent = "Saving";
+      var ok = await saveAsAngle(o);
+      keep.textContent = ok ? "Kept" : "Cannot save";
+      if (ok) keep.className = "mini done"; else keep.disabled = false;
+    };
+    acts.appendChild(keep);
+
+    c.appendChild(acts);
+    return c;
+  }
+
+  function labMsg(cls, title, body){
+    var n = $("lab-note");
+    n.hidden = false;
+    n.className = "note-box" + (cls ? " " + cls : "");
+    n.innerHTML = "<strong>" + esc(title) + "</strong><div>" + esc(body) + "</div>";
+  }
+
+  async function findOutliers(){
+    if (labBusy) return;
+    if (!mcp){
+      labMsg("crit", "Live search unavailable", "This view cannot reach vidIQ, so outlier search is off.");
+      return;
+    }
+    var q = $("lab-q").value.trim();
+    if (!q){
+      labMsg("warn", "Give it a topic", "Type what you want to search before running it. Each search " +
+        "costs vidIQ credits, so it does not run on its own.");
+      $("lab-q").focus();
+      return;
+    }
+    labBusy = true;
+    $("lab-go").disabled = true;
+    $("lab-go").textContent = "Searching";
+    $("lab-out").innerHTML = "";
+    labMsg("", "Searching Instagram and TikTok", "Looking for posts beating their creator's median on: " + q);
+    try {
+      var res = await mcp.callTool(S_VID, "vidiq_instagram_tiktok_outlier_search",
+        {query:q, audienceQuery:AUDIENCE, resultsPerPlatform:3},
+        {cache:{staleTime:300000}});
+      var payload = res.payload;
+      var raw = (typeof payload === "string") ? payload : JSON.stringify(payload, null, 2);
+      var items = splitOutliers(raw);
+      if (!items.length){
+        labMsg("warn", "Nothing came back for that topic",
+          "vidIQ found no outliers matching it. Try a broader phrasing, or a different angle on the same idea.");
+        return;
+      }
+      var host = $("lab-out");
+      items.forEach(function(o){ host.appendChild(outlierCard(o)); });
+      labMsg("", "Found " + items.length + (items.length === 1 ? " outlier" : " outliers"),
+        "Pick one and I will work out the mechanism, what transfers, your version of it, the production " +
+        "plan, and the reason it might be wrong for you. Two before you call anything a pattern.");
+    } catch (e){
+      var copy = errCopy(e, S_VID);
+      labMsg("crit", copy.title, copy.detail);
+    } finally {
+      labBusy = false;
+      $("lab-go").disabled = false;
+      $("lab-go").textContent = "Find outliers";
+    }
+  }
+
   /* ---------- boot ---------- */
   function noLive(err){
     var e = errCopy(err || {code:"capability_disabled"}, "your connectors");
@@ -1612,6 +1889,10 @@ You can also just type. I know your voice rules, your retired vocabulary, your d
     ask(v, null);
   });
   $("stop").addEventListener("click", function(){ if (ctl) ctl.abort(); });
+  $("lab-go").addEventListener("click", findOutliers);
+  $("lab-q").addEventListener("keydown", function(e){
+    if (e.key === "Enter"){ e.preventDefault(); findOutliers(); }
+  });
   $("newthread").addEventListener("click", function(){
     if (busy && ctl) ctl.abort();
     turns = [];
