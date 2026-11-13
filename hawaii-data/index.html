@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hawaiʻi, Visualized</title>
+<meta name="description" content="Scroll from the summit of Mauna Kea to the sea floor. Explore Hawaiʻi through visitor counts, carbon data, islands, rainfall and live earthquakes, then share what you find.">
+<meta property="og:title" content="Hawaiʻi, Visualized">
+<meta property="og:description" content="Big data about Hawaiʻi, turned into a scroll you can play with.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#06121f">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<canvas id="ambient" aria-hidden="true"></canvas>
+
+<header class="topbar">
+  <a class="brand" href="#top">Hawaiʻi, Visualized</a>
+  <nav aria-label="Chapters" id="dots"></nav>
+  <button id="soundToggle" class="chip" aria-pressed="false" title="Turn on sound for the CO₂ sonification">Sound off</button>
+  <div class="progress" aria-hidden="true"><i id="progressBar"></i></div>
+</header>
+
+<main id="top">
+
+<section class="hero" id="hero" data-title="Start">
+  <p class="eyebrow">An interactive data story</p>
+  <h1>Hawaiʻi,<br><span class="grad">by the numbers</span></h1>
+  <p class="lede">Start on a mountain taller than Everest and swim down through nine data stories. Tap, drag and guess along the way.</p>
+  <div class="hero-stats" id="heroStats">
+    <div><b data-count="1.44" data-dec="2">0</b><span>million residents</span></div>
+    <div><b data-count="9.7" data-dec="1">0</b><span>million visitors a year</span></div>
+    <div><b data-count="425" data-dec="0">0</b><span>ppm CO₂ measured on Mauna Loa</span></div>
+  </div>
+  <a class="cta" href="#malihini">Begin the descent <span aria-hidden="true">↓</span></a>
+</section>
+
+<section class="chapter" id="malihini" data-title="Malihini">
+  <div class="wrap">
+    <p class="eyebrow"><span class="haw">Malihini</span> · newcomer</p>
+    <h2>The tide of visitors</h2>
+    <p class="lede">Drag through time. In 2019 Hawaiʻi welcomed 10.4 million visitors, then the world stopped.</p>
+    <div class="card">
+      <div class="readout"><b id="visYear">2019</b><span id="visVal"></span><em id="visNote"></em></div>
+      <div class="chart" id="visChart" role="img" aria-label="Line chart of annual visitor arrivals to Hawaiʻi from 2000 to 2024"></div>
+      <label class="slider">Year <input id="visSlider" type="range" aria-label="Year"></label>
+      <p class="insight" id="visInsight"></p>
+      <div class="actions"><button class="btn" data-share="visitors">Share this</button><button class="link" data-table="visitors">View data table</button></div>
+      <div class="table-wrap" id="visTable" hidden></div>
+    </div>
+    <p class="src" id="visSrc"></p>
+  </div>
+</section>
+
+<section class="chapter" id="mauna" data-title="Mauna">
+  <div class="wrap">
+    <p class="eyebrow"><span class="haw">Mauna</span> · mountain</p>
+    <h2>The tallest mountain on Earth</h2>
+    <p class="lede">Measured from the sea floor, Mauna Kea rises about 33,500 ft. Everest, measured from sea level, tops out at 29,032 ft.</p>
+    <div class="card">
+      <div class="peaks" id="peaks"></div>
+      <p class="insight">Most of Mauna Kea is underwater. About <b>19,700 ft</b> of it sits below the waves and <b>13,803 ft</b> rises above them.</p>
+      <div class="actions"><button class="btn" data-share="peaks">Share this</button></div>
+    </div>
+    <p class="src" id="peaksSrc"></p>
+  </div>
+</section>
+
+<section class="chapter" id="ea" data-title="Ea">
+  <div class="wrap">
+    <p class="eyebrow"><span class="haw">Ea</span> · breath, air</p>
+    <h2>The Keeling Curve</h2>
+    <p class="lede">Since 1958 a lab on Mauna Loa has measured carbon dioxide in the air. It is one of the most important datasets in science.</p>
+    <div class="card">
+      <div class="readout"><b id="co2Year">2024</b><span id="co2Val"></span><em id="co2Note"></em></div>
+      <div class="chart" id="co2Chart" role="img" aria-label="Line chart of Mauna Loa annual mean CO₂ from 1959 to 2024, rising from 316 to 425 ppm"></div>
+      <label class="slider">Year <input id="co2Slider" type="range" aria-label="Year"></label>
+      <div class="actions">
+        <button class="btn" id="playCo2">▶ Hear the curve</button>
+        <button class="btn ghost" data-share="co2">Share this</button>
+        <button class="link" data-table="co2">View data table</button>
+      </div>
+      <p class="hint">The sonification maps CO₂ to pitch: the higher the concentration, the higher the note.</p>
+      <div class="table-wrap" id="co2Table" hidden></div>
+    </div>
+    <p class="src" id="co2Src"></p>
+  </div>
+</section>
+
+<section class="chapter" id="moku" data-title="Moku">
+  <div class="wrap">
+    <p class="eyebrow"><span class="haw">Moku</span> · island</p>
+    <h2>Land versus people</h2>
+    <p class="lede">Flip between land area and population. The islands trade places.</p>
+    <div class="card">
+      <div class="seg" role="tablist" aria-label="Metric">
+        <button role="tab" class="on" data-metric="area">Land area</button>
+        <button role="tab" data-metric="pop">Population</button>
+      </div>
+      <canvas id="islandCanvas" width="900" height="460" role="img" aria-label="Bubble map of the Hawaiian islands sized by the selected metric"></canvas>
+      <p class="insight" id="islandInsight"></p>
+      <div class="actions"><button class="btn" data-share="islands">Share this</button></div>
+    </div>
+    <p class="src" id="islandSrc"></p>
+  </div>
+</section>
+
+<section class="chapter" id="ua" data-title="Ua">
+  <div class="wrap">
+    <p class="eyebrow"><span class="haw">Ua</span> · rain</p>
+    <h2>One state, a thousand climates</h2>
+    <p class="lede">Rain gauges scaled to yearly rainfall. Tap a gauge to fill it.</p>
+    <div class="card">
+      <div class="gauges" id="gauges"></div>
+      <p class="insight" id="rainInsight"></p>
+      <div class="actions"><button class="btn" data-share="rain">Share this</button></div>
+    </div>
+    <p class="src" id="rainSrc"></p>
+  </div>
+</section>
+
+<section class="chapter" id="honua" data-title="Honua">
+  <div class="wrap">
+    <p class="eyebrow"><span class="haw">Honua</span> · earth</p>
+    <h2>The ground, right now</h2>
+    <p class="lede">Live earthquakes from the USGS over the last 30 days, plus the current water level at Honolulu from NOAA.</p>
+    <div class="card">
+      <canvas id="quakeCanvas" width="900" height="460" role="img" aria-label="Map of recent earthquakes near the Hawaiian islands"></canvas>
+      <div class="legend-row" id="quakeLegend"></div>
+      <p class="insight" id="quakeInsight">Loading live data…</p>
+      <div class="actions"><button class="btn" data-share="quakes">Share this</button></div>
+    </div>
+    <p class="src">Sources: USGS Earthquake Catalog and NOAA CO-OPS (station 1612340, Honolulu), fetched live in your browser. No data is shown if a feed is unreachable.</p>
+  </div>
+</section>
+
+<section class="chapter" id="manu" data-title="Manu">
+  <div class="wrap">
+    <p class="eyebrow"><span class="haw">Manu</span> · bird</p>
+    <h2>Found nowhere else</h2>
+    <p class="lede">Hawaiʻi is the most isolated island chain on Earth, so life here evolved on its own.</p>
+    <div class="facts" id="facts"></div>
+    <p class="src">Approximate figures from the U.S. Fish and Wildlife Service and the Hawaiʻi Department of Land and Natural Resources.</p>
+  </div>
+</section>
+
+<section class="chapter" id="olelo" data-title="ʻŌlelo">
+  <div class="wrap">
+    <p class="eyebrow"><span class="haw">ʻŌlelo Hawaiʻi</span> · the language</p>
+    <h2>Thirteen letters</h2>
+    <p class="lede">Five vowels and eight consonants, including the ʻokina. Tap a letter to see how it sounds.</p>
+    <div class="letters" id="letters"></div>
+  </div>
+</section>
+
+<section class="chapter" id="ike" data-title="ʻIke">
+  <div class="wrap">
+    <p class="eyebrow"><span class="haw">ʻIke</span> · knowledge</p>
+    <h2>How well do you know the numbers?</h2>
+    <div class="card" id="quiz"></div>
+  </div>
+</section>
+
+<footer class="chapter foot">
+  <div class="wrap">
+    <h2>Mahalo for exploring</h2>
+    <p>Data tells part of a story. Hawaiʻi's history, land and people are far bigger than any chart. Learn from Native Hawaiian voices and organizations, and visit with care.</p>
+    <div class="actions center"><button class="btn" data-share="site">Share this site</button><button class="btn ghost" id="copyLink">Copy link</button></div>
+    <p class="src">Figures are rounded and curated for storytelling. Always check original sources before citing.</p>
+  </div>
+</footer>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<dialog id="shareDlg">
+  <form method="dialog">
+    <h3>Share card</h3>
+    <canvas id="shareCanvas" width="1080" height="1350"></canvas>
+    <div class="actions center">
+      <button class="btn" id="shareBtn" value="x" type="button">Share</button>
+      <button class="btn ghost" id="dlBtn" type="button">Download PNG</button>
+      <button class="link" value="close">Close</button>
+    </div>
+  </form>
+</dialog>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
